@@ -12,6 +12,8 @@ def getLinkDictFromCSV(csv_filename):
     with open(csv_filename) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
+            if row == []:
+                continue
             link = row[0]
             label = row[1]
             links_dict[label] = link

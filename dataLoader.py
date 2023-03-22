@@ -49,11 +49,11 @@ def getPixelValues(image_files):
     
     return x_data
 
-if __name__ == "__main__":
+def getImageDataVectors():
     image_files, labels = loadDataFiles()
     y_data = convertLabelToVec(labels)
     x_data = getPixelValues(image_files)
 
-    print(x_data)
-    print(y_data)
+    return x_data, y_data
+
     

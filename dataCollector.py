@@ -19,7 +19,6 @@ def getLinkDictFromCSV(csv_filename):
 
 def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     global path_fail_ind, path_weird_characters
-    num_clips = num_images // 20
     num_added = 0
     try:
         vid_to_download = video.streams.filter(only_video=True, resolution='240p').first()
@@ -57,11 +56,7 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     frame_indices = np.arange(num_frames)
     frames_to_pick = np.random.permutation(frame_indices)[:num_images]
 
-    clip = 0
-
     while True:
-        if (num_added % 20) and (num_added != 0):
-            clip += 1
         notDone, frame = cap.read()
         if not notDone:
             cap.release()
@@ -91,22 +86,22 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     os.remove(vid_path)
     return num_added
 
-def downloadFramesOnePlaylist(playlist_link, num_images, path, chooseRandomly):
-
+def downloadFramesOnePlaylist(playlist_link,podcast, num_images, path, chooseRandomly):
+    global path_fail_ind, path_weird_characters
     try:
         pl = Playlist(playlist_link)
     except:
         print("error in making playlist for link:", playlist_link)
         return 0
     
-    new_path = os.path.join(path, pl.title)
+    new_path = os.path.join(path, podcast)
 
     try:
         if not os.path.exists(new_path):
             os.mkdir(new_path)
     except:
         # couldnt make a directory with that name, so I guess change it
-        path_weird_characters.append(pl.title)
+        path_weird_characters.append(podcast)
         new_path = os.path.join(path, str(path_fail_ind))
         if not os.path.exists(new_path):
             os.mkdir(new_path)
@@ -153,13 +148,11 @@ def downloadFramesToPath(links_dict, num_images, path="", chooseRandomly=True):
 
     for podcast in links_dict.keys():
         playlist_link = links_dict[podcast]
-        num_images_added = downloadFramesOnePlaylist(playlist_link, one_playlist_num_images, path, chooseRandomly)
+        num_images_added = downloadFramesOnePlaylist(playlist_link, podcast, one_playlist_num_images, path, chooseRandomly)
         print(num_images_added, "imaged added from playlist:",podcast)
     return
 
 if __name__ == "__main__":
     links_dict = getLinkDictFromCSV(csv_filename='playlistLinks.csv')
-    # let just say each clip is 20 seconds, then each clip is 600 images. Reduce it to to 20, (1 per second).
-    # ensure num images is a multiple of 20!
     downloadFramesToPath(links_dict=links_dict, num_images=200)
     print(path_weird_characters)

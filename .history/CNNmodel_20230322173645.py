@@ -28,7 +28,6 @@ class MyDataset(Dataset):
         return x_i, y_i
 
 
-
 class CNNClassifier(nn.Module):
     def __init__(self, numClasses=10):
         super(CNNClassifier, self).__init__()
@@ -73,12 +72,11 @@ train_dataloader = DataLoader(train_dataset, batch_size=100, shuffle=True, num_w
 test_dataloader = DataLoader(test_dataset, batch_size=100, shuffle=False, num_workers=2)
 
 
-
 def train(model, dataloader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
 
-    for i, data in enumerate(test_dataloader):
+    for i, data in enumerate(dataloader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 
@@ -93,7 +91,6 @@ def train(model, dataloader, criterion, optimizer, device):
 
     numElems = i + 1
     return running_loss / numElems
-
 
 
 def test(model, dataloader, device):
@@ -113,21 +110,3 @@ def test(model, dataloader, device):
 
     accuracy = 100 * correct / total
    
-    return accuracy 
-
-
-
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-model.to(device)
-
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-
-num_epochs = 10
-for epoch in range(num_epochs):
-
-    train_loss = train(model, train_dataloader, criterion, optimizer, device)
-    test_accuracy = test(model, test_dataloader, device)
-
-    print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")

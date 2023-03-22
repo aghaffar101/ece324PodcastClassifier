@@ -11,25 +11,25 @@ from PIL import Image
 
 from torch.utils.data import random_split
 from dataLoader import getImageDataVectors
-from torch.utils.data import Dataset, DataLoader
 
+'''
+### use multiple frames to finally make a prediction 
 
-class MyDataset(Dataset):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+## for each podcast clip (20s long)
+## do the naive approach: 
 
-    def __len__(self):
-        return len(self.x)
+## Make a prediction for each frame/img from the podcast clip and then classify it as the podcast name 
+## with the highest probability ***
 
-    def __getitem__(self, idx):
-        x_i = self.x[idx]
-        y_i = self.y[idx]
-        return x_i, y_i
+## then for all the clips repeat *** and do naive bayes assuming that all the individual frames are independent
+
+'''
+
 
 
 
 class CNNClassifier(nn.Module):
+
     def __init__(self, numClasses=10):
         super(CNNClassifier, self).__init__()
 
@@ -41,7 +41,10 @@ class CNNClassifier(nn.Module):
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
 
-        self.fc3 = nn.Linear(84, numClasses)
+        self.fc3 = nn.Linear(84, numClasses) 
+        # final layer is the number of podcast titles number of nodes 
+
+
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -57,28 +60,43 @@ class CNNClassifier(nn.Module):
 
 model = CNNClassifier()
 
+
+## load the data from the dataLoader() function 
 x_data, y_data = getImageDataVectors()
 
-custom_dataset = MyDataset(x_data, y_data)
 
+custom_dataloader = torch.utils.data.DataLoader(custom_dataset, batch_size=5, shuffle=True, num_workers=2)
+
+
+# find the lengths of the training and testing datasets
 train_ratio = 0.8
 total_length = len(custom_dataset)
+print("total_length", total_length)
+
 train_length = int(train_ratio * total_length)
 test_length = total_length - train_length
 
-generator = torch.Generator().manual_seed(42)
-train_dataset, test_dataset = torch.utils.data.random_split(custom_dataset, [train_length, test_length], generator=generator)
+# Split the dataset
+generator2 = torch.Generator().manual_seed(42)
+train_dataset, test_dataset = random_split(custom_dataset, [train_length, test_length], generator=generator2)
 
-train_dataloader = DataLoader(train_dataset, batch_size=100, shuffle=True, num_workers=2)
-test_dataloader = DataLoader(test_dataset, batch_size=100, shuffle=False, num_workers=2)
+# Create data loaders for the training and testing datasets
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True, num_workers=2)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False, num_workers=2)
 
 
 
 def train(model, dataloader, criterion, optimizer, device):
+
+        
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+
     model.train()
     running_loss = 0.0
 
-    for i, data in enumerate(test_dataloader):
+    for i, data in enumerate(dataloader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 
@@ -96,38 +114,16 @@ def train(model, dataloader, criterion, optimizer, device):
 
 
 
-def test(model, dataloader, device):
-    model.eval()
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for data in dataloader:
-            images, labels = data
-            images, labels = images.to(device), labels.to(device)
-
-            outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    accuracy = 100 * correct / total
-   
-    return accuracy 
-
-
-
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 num_epochs = 10
 for epoch in range(num_epochs):
-
     train_loss = train(model, train_dataloader, criterion, optimizer, device)
-    test_accuracy = test(model, test_dataloader, device)
+    print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}")
 
-    print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")
+
+def test(model, dataloader, device):
+    model.eval()
+   

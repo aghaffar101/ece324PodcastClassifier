@@ -78,7 +78,7 @@ def train(model, dataloader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
 
-    for i, data in enumerate(test_dataloader):
+    for i, data in enumerate(dataloader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 

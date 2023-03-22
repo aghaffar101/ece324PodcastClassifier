@@ -4,9 +4,8 @@ import numpy as np
 import csv
 import cv2
 
-
-path_weird_characters = []
 path_fail_ind = 0
+path_weird_characters = []
 
 def getLinkDictFromCSV(csv_filename):
     links_dict = {}
@@ -19,6 +18,8 @@ def getLinkDictFromCSV(csv_filename):
     return links_dict
 
 def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
+    global path_fail_ind, path_weird_characters
+    num_clips = num_images // 20
     num_added = 0
     try:
         vid_to_download = video.streams.filter(only_video=True, resolution='240p').first()
@@ -56,7 +57,11 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     frame_indices = np.arange(num_frames)
     frames_to_pick = np.random.permutation(frame_indices)[:num_images]
 
+    clip = 0
+
     while True:
+        if (num_added % 20) and (num_added != 0):
+            clip += 1
         notDone, frame = cap.read()
         if not notDone:
             cap.release()
@@ -153,6 +158,8 @@ def downloadFramesToPath(links_dict, num_images, path="", chooseRandomly=True):
     return
 
 if __name__ == "__main__":
-
     links_dict = getLinkDictFromCSV(csv_filename='playlistLinks.csv')
+    # let just say each clip is 20 seconds, then each clip is 600 images. Reduce it to to 20, (1 per second).
+    # ensure num images is a multiple of 20!
     downloadFramesToPath(links_dict=links_dict, num_images=200)
+    print(path_weird_characters)

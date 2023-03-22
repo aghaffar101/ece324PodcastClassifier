@@ -10,6 +10,7 @@ import os
 from PIL import Image
 
 from torch.utils.data import random_split
+from dataLoader import getImageDataVectors
 
 
 '''
@@ -24,9 +25,6 @@ from torch.utils.data import random_split
 ## then for all the clips repeat *** and do naive bayes assuming that all the individual frames are independent
 
 '''
-
-
-
 
 class CNNClassifier(nn.Module):
 
@@ -46,8 +44,13 @@ class CNNClassifier(nn.Module):
 
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        
         x = x.view(-1, 16 * 5 * 5)
 
         x = F.relu(self.fc1(x))
@@ -56,8 +59,14 @@ class CNNClassifier(nn.Module):
 
         return x
 
+x_data, y_data = getImageDataVectors()
 
-model = CNNClassifier()
+print(x_data.shape, y_data.shape)
+
+model = CNNClassifier(numClasses=len(y_data[0]))
+
+output = model.forward(x_data)
+print(output)
 
 base_folder = './data'
 transform = transforms.Compose([

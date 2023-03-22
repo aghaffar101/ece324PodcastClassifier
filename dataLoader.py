@@ -53,7 +53,8 @@ def getImageDataVectors():
     image_files, labels = loadDataFiles()
     y_data = convertLabelToVec(labels)
     x_data = getPixelValues(image_files)
-
+    x_data = torch.stack(x_data)
+    y_data = torch.tensor(y_data)
     return x_data, y_data
 
     

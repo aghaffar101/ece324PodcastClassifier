@@ -50,8 +50,8 @@ class CNNClassifier(nn.Module):
         x = self.conv2(x)
         x = F.relu(x)
         x = self.pool(x)
-        
-        x = x.view(-1, 16 * 5 * 5)
+
+        x = x.view(-1, x.shape[1] * x.shape[2] * x.shape[3])
 
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))

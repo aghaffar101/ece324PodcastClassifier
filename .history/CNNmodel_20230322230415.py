@@ -188,9 +188,7 @@ def test(model, dataloader, device):
 
 
 if __name__ == "__main__":
-    
     device = torch.device("cpu")
-
     model.to(device)
 
     num_epochs = 5

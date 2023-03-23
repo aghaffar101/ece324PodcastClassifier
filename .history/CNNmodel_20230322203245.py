@@ -57,6 +57,7 @@ class CNNClassifier(nn.Module):
 
         return 16 * height * width
 
+
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
@@ -72,7 +73,6 @@ class CNNClassifier(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
 
-        # No softmax activation
         return x
 
 
@@ -96,7 +96,7 @@ model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
         self.x = x
-        self.y = y.argmax(axis=1)  # Convert one-hot encoded labels to class indices
+        self.y = y
 
     def __len__(self):
         return len(self.x)
@@ -141,14 +141,9 @@ def train(model, dataloader, device):
 
         optimizer.zero_grad()
 
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
+        outputs = model(inputs)
 
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
+        loss = lossFcn(outputs, labels)        loss = lossFcn(outputs, labels)
         
         loss.backward()
 
@@ -159,29 +154,8 @@ def train(model, dataloader, device):
     return running_loss / numElems
 
 
-
-
 def test(model, dataloader, device):
-    
-    running_loss = 0.0
-
-    for i, data in enumerate(dataloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-
-        running_loss += loss.item()
-    
-    numElems = i + 1
-    return running_loss / numElems
-
+    model.eval()
    
 
 
@@ -193,6 +167,6 @@ if __name__ == "__main__":
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
         test_accuracy = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy}")
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")
 
 

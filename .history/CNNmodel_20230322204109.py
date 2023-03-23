@@ -76,23 +76,6 @@ class CNNClassifier(nn.Module):
         return x
 
 
-x_data, y_data = getImageDataVectors()
-
-print(x_data.shape)
-
-print(x_data.shape, y_data.shape)
-
-height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-output = model.forward(x_data)
-print(output)
-
-
-height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
         self.x = x
@@ -108,28 +91,30 @@ class CustomTensorDataset(Dataset):
 
 
 ## Test-train split:
-train_ratio = 0.8
-total_length = len(x_data)
-train_length = int(train_ratio * total_length)
-test_length = total_length - train_length
+def datasetSplit():
+    train_ratio = 0.8
+    total_length = len(x_data)
+    train_length = int(train_ratio * total_length)
+    test_length = total_length - train_length
 
-x_train = x_data[:train_length]
-y_train = y_data[:train_length]
+    x_train = x_data[:train_length]
+    y_train = y_data[:train_length]
 
-x_test = x_data[train_length:]
-y_test = y_data[train_length:]
+    x_test = x_data[train_length:]
+    y_test = y_data[train_length:]
 
-train_dataset = CustomTensorDataset(x_train, y_train)
-test_dataset = CustomTensorDataset(x_test, y_test)
+    train_dataset = CustomTensorDataset(x_train, y_train)
+    test_dataset = CustomTensorDataset(x_test, y_test)
 
-train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 
-# setting the loss function and the training optimizer 
-lossFcn = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    # setting the loss function and the training optimizer 
+    lossFcn = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
+    return lossFcn, optimizer, train_dataloader, test_dataloader
 
 def train(model, dataloader, device):
     model.train()
@@ -189,10 +174,14 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
+
     num_epochs = 5
+
     for epoch in range(num_epochs):
+
         train_loss = train(model, train_dataloader, device)
         test_accuracy = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy}")
+
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")
 
 

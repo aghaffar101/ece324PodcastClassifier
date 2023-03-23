@@ -190,9 +190,12 @@ if __name__ == "__main__":
     model.to(device)
 
     num_epochs = 5
+    
     for epoch in range(num_epochs):
+
         train_loss = train(model, train_dataloader, device)
         test_accuracy = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy}")
+
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")
 
 

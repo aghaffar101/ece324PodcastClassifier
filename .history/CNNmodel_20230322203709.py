@@ -159,29 +159,8 @@ def train(model, dataloader, device):
     return running_loss / numElems
 
 
-
-
 def test(model, dataloader, device):
-    
-    running_loss = 0.0
-
-    for i, data in enumerate(dataloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-
-        running_loss += loss.item()
-    
-    numElems = i + 1
-    return running_loss / numElems
-
+    model.eval()
    
 
 

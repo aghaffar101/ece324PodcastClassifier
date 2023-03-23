@@ -168,6 +168,8 @@ def test(model, dataloader, device):
     for i, data in enumerate(dataloader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
+
+
         outputs = model.forward(inputs)
                 
         # Calculate loss using raw logits

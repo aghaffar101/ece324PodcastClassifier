@@ -30,32 +30,21 @@ from torch.utils.data import Dataset, DataLoader
 
 class CNNClassifier(nn.Module):
 
-    def __init__(self, height, width, channels, numClasses=10):
+    def __init__(self, numClasses=10):
         super(CNNClassifier, self).__init__()
 
-        self.conv1 = nn.Conv2d(channels, 6, 5)
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
 
         self.conv2 = nn.Conv2d(6, 16, 5)
 
-        fc1_input_dim = self.compute_fc1_input_dim(height, width)
 
-        self.fc1 = nn.Linear(fc1_input_dim, 120)
+        self.fc1 = nn.Linear(, 120)
         self.fc2 = nn.Linear(120, 84)
 
         self.fc3 = nn.Linear(84, numClasses) 
         # final layer is the number of podcast titles number of nodes 
 
-    def compute_fc1_input_dim(self, height, width):
-        # First convolution and pooling
-        height = (height - 4) // 2
-        width = (width - 4) // 2
-        
-        # Second convolution and pooling
-        height = (height - 4) // 2
-        width = (width - 4) // 2
-
-        return 16 * height * width
 
     def forward(self, x):
         x = self.conv1(x)
@@ -65,38 +54,36 @@ class CNNClassifier(nn.Module):
         x = self.conv2(x)
         x = F.relu(x)
         x = self.pool(x)
-
+        print(x.shape)
+        
+        print(x.shape[1] * x.shape[2] * x.shape[3])
         x = x.view(-1, x.shape[1] * x.shape[2] * x.shape[3])
 
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
 
-        # No softmax activation
         return x
 
 
 x_data, y_data = getImageDataVectors()
 
-print(x_data.shape)
-
+'''
 print(x_data.shape, y_data.shape)
 
-height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+model = CNNClassifier(numClasses=len(y_data[0]))
 
 output = model.forward(x_data)
 print(output)
+'''
 
-
-height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+model = CNNClassifier(numClasses=len(y_data[0]))
 
 
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
         self.x = x
-        self.y = y.argmax(axis=1)  # Convert one-hot encoded labels to class indices
+        self.y = y
 
     def __len__(self):
         return len(self.x)
@@ -122,12 +109,13 @@ y_test = y_data[train_length:]
 train_dataset = CustomTensorDataset(x_train, y_train)
 test_dataset = CustomTensorDataset(x_test, y_test)
 
+
+
 train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+test_dataloader = DataLoader(test_dataset, batch_size=100, shuffle=False)
 
 
-# setting the loss function and the training optimizer 
-lossFcn = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
@@ -141,47 +129,18 @@ def train(model, dataloader, device):
 
         optimizer.zero_grad()
 
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-        
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
         loss.backward()
-
         optimizer.step()
+
         running_loss += loss.item()
 
     numElems = i + 1
     return running_loss / numElems
-
-
-
 
 def test(model, dataloader, device):
-    
-    running_loss = 0.0
-
-    for i, data in enumerate(dataloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-
-        running_loss += loss.item()
-    
-    numElems = i + 1
-    return running_loss / numElems
-
+    model.eval()
    
 
 
@@ -193,6 +152,7 @@ if __name__ == "__main__":
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
         test_accuracy = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy}")
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")
+
 
 

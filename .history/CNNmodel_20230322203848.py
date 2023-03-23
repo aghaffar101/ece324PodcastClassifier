@@ -168,6 +168,9 @@ def test(model, dataloader, device):
     for i, data in enumerate(dataloader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+
         outputs = model.forward(inputs)
                 
         # Calculate loss using raw logits
@@ -177,6 +180,7 @@ def test(model, dataloader, device):
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
         correct = (predicted == labels).sum().item()
 
+        optimizer.step()
         running_loss += loss.item()
     
     numElems = i + 1

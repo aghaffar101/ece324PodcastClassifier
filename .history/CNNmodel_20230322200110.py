@@ -46,6 +46,7 @@ class CNNClassifier(nn.Module):
         self.fc3 = nn.Linear(84, numClasses) 
         # final layer is the number of podcast titles number of nodes 
 
+
     def compute_fc1_input_dim(self, height, width):
         # First convolution and pooling
         height = (height - 4) // 2
@@ -57,9 +58,8 @@ class CNNClassifier(nn.Module):
 
         return 16 * height * width
 
-    def forward(self, x):
-        # flow of data
 
+    def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
         x = self.pool(x)
@@ -74,7 +74,6 @@ class CNNClassifier(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
 
-        # No softmax activation
         return x
 
 
@@ -87,8 +86,10 @@ print(x_data.shape, y_data.shape)
 height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
 model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
+
 output = model.forward(x_data)
 print(output)
+
 
 
 height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
@@ -98,7 +99,7 @@ model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
         self.x = x
-        self.y = y.argmax(axis=1)  # Convert one-hot encoded labels to class indices
+        self.y = y
 
     def __len__(self):
         return len(self.x)
@@ -128,8 +129,8 @@ train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 
-# setting the loss function and the training optimizer 
-lossFcn = nn.CrossEntropyLoss()
+
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
@@ -142,61 +143,32 @@ def train(model, dataloader, device):
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
+        print("l147 inputs shape", inputs.shape)
 
-        outputs = model(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
 
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-        
+        outputs = model.forward(inputs)
+        loss = criterion(outputs, labels)
         loss.backward()
+        optimizer.step() # parameter update 
 
-        optimizer.step()
         running_loss += loss.item()
 
     numElems = i + 1
     return running_loss / numElems
-
-
-
 
 def test(model, dataloader, device):
-    
-    running_loss = 0.0
-
-    for i, data in enumerate(dataloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-
-        running_loss += loss.item()
-    
-    numElems = i + 1
-    return running_loss / numElems
-
+    model.eval()
    
 
 
 if __name__ == "__main__":
-
-    device = torch.device("cpu")
-
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
     num_epochs = 5
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
-        test_loss = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, LTrain oss: {train_loss:.4f}, Test Loss: {test_loss}")
+        test_accuracy = test(model, test_dataloader, device)
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")
 
 

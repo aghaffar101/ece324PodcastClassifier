@@ -58,8 +58,6 @@ class CNNClassifier(nn.Module):
         return 16 * height * width
 
     def forward(self, x):
-        # flow of data
-
         x = self.conv1(x)
         x = F.relu(x)
         x = self.pool(x)
@@ -143,7 +141,7 @@ def train(model, dataloader, device):
 
         optimizer.zero_grad()
 
-        outputs = model(inputs)
+        outputs = model.forward(inputs)
                 
         # Calculate loss using raw logits
         loss = lossFcn(outputs, labels)
@@ -161,42 +159,19 @@ def train(model, dataloader, device):
     return running_loss / numElems
 
 
-
-
 def test(model, dataloader, device):
-    
-    running_loss = 0.0
-
-    for i, data in enumerate(dataloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model.forward(inputs)
-                
-        # Calculate loss using raw logits
-        loss = lossFcn(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
-
-        running_loss += loss.item()
-    
-    numElems = i + 1
-    return running_loss / numElems
-
+    model.eval()
    
 
 
 if __name__ == "__main__":
-
-    device = torch.device("cpu")
-
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
     num_epochs = 5
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
-        test_loss = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, LTrain oss: {train_loss:.4f}, Test Loss: {test_loss}")
+        test_accuracy = test(model, test_dataloader, device)
+        print(f"Epoch: {epoch+1}, Loss: {train_loss}, Test Accuracy: {test_accuracy}")
 
 

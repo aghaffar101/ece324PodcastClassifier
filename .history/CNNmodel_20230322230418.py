@@ -188,7 +188,7 @@ def test(model, dataloader, device):
 
 
 if __name__ == "__main__":
-
+    
     device = torch.device("cpu")
 
     model.to(device)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     num_epochs = 5
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
-        test_loss = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, LTrain oss: {train_loss:.4f}, Test Loss: {test_loss}")
+        test_accuracy = test(model, test_dataloader, device)
+        print(f"Epoch: {epoch+1}, Loss: {train_loss:.4f}, Test Accuracy: {test_accuracy}")
 
 

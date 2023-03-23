@@ -197,6 +197,6 @@ if __name__ == "__main__":
     for epoch in range(num_epochs):
         train_loss = train(model, train_dataloader, device)
         test_loss = test(model, test_dataloader, device)
-        print(f"Epoch: {epoch+1}, LTrain oss: {train_loss:.4f}, Test Loss: {test_loss}")
+        print(f"Epoch: {epoch+1}, LTrain oss: {train_loss:.4f}, Test Loss: {test_accuracy}")
 
 

@@ -94,6 +94,7 @@ class CustomTensorDataset(Dataset):
 
 
 
+
 def train(model, dataloader, device,):
     model.train()
     running_loss = 0.0
@@ -127,6 +128,7 @@ def train(model, dataloader, device,):
 
     numElems = i + 1
     return running_loss / numElems
+
 
 
 

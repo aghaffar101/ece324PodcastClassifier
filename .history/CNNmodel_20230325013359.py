@@ -94,6 +94,7 @@ class CustomTensorDataset(Dataset):
 
 
 
+
 def train(model, dataloader, device,):
     model.train()
     running_loss = 0.0
@@ -127,6 +128,7 @@ def train(model, dataloader, device,):
 
     numElems = i + 1
     return running_loss / numElems
+
 
 
 
@@ -178,7 +180,7 @@ if __name__ == "__main__":
     #########################
 
     ## Test-train split:
-    train_ratio = 0.8
+    train_ratio = 0.6
     total_length = len(x_data)
     train_length = int(train_ratio * total_length)
     test_length = total_length - train_length
@@ -198,7 +200,7 @@ if __name__ == "__main__":
 
     # setting the loss function and the training optimizer 
     
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
 

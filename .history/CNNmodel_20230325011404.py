@@ -94,7 +94,8 @@ class CustomTensorDataset(Dataset):
 
 
 
-def train(model, dataloader, device,):
+
+def train(model, dataloader, device):
     model.train()
     running_loss = 0.0
 
@@ -102,25 +103,24 @@ def train(model, dataloader, device,):
         # enumerate is used to get the next batch of data 
 
         inputs, labels = data
+
         #print("inputs", inputs.shape)
         #print("label", labels)
+
         inputs, labels = inputs.to(device), labels.to(device)
 
-        # zero out the gradients that were previously attached to weights 
-        # to prevent accumulated gradients 
-        optimizer.zero_grad() 
-        
-        # forward pass
-        outputs = model(inputs) 
+        optimizer.zero_grad()
+
+        outputs = model(inputs)
                 
         # Calculate loss using raw logits
-        loss = F.cross_entropy(outputs, labels)
+        loss = lossFcn(outputs, labels)
 
         # Calculate accuracy using class probabilities
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
         correct = (predicted == labels).sum().item()
         
-        loss.backward(retain_graph=True)
+        loss.backward()
 
         optimizer.step()
         running_loss += loss.item()
@@ -130,7 +130,8 @@ def train(model, dataloader, device,):
 
 
 
-def test(model, dataloader, device,):
+
+def test(model, dataloader, device):
     model.eval() # test mode 
     running_loss = 0.0
 
@@ -140,7 +141,7 @@ def test(model, dataloader, device,):
         outputs = model.forward(inputs)
                 
         # Calculate loss using raw logits
-        loss = F.cross_entropy(outputs, labels)
+        loss = lossFcn(outputs, labels)
 
         # Calculate accuracy using class probabilities
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
@@ -197,8 +198,8 @@ if __name__ == "__main__":
 
 
     # setting the loss function and the training optimizer 
-    
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9)
+    lossFcn = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
 
@@ -206,14 +207,14 @@ if __name__ == "__main__":
 
     model.to(device)
     
-    num_epochs = 15
+    num_epochs = 5
     epochsLis = np.arange(num_epochs)
     trainLossLis = np.empty(shape=(num_epochs))
     testLossLis = np.empty(shape=(num_epochs))
 
     for epoch in range(num_epochs):
-        train_loss = train(model, train_dataloader, device,)
-        test_loss = test(model, test_dataloader, device,)
+        train_loss = train(model, train_dataloader, device)
+        test_loss = test(model, test_dataloader, device)
         print(f"Epoch: {epoch+1}, Train Loss: {train_loss:.4f}, Test Loss: {test_loss}")
         trainLossLis[epoch] = train_loss
         testLossLis[epoch] = test_loss

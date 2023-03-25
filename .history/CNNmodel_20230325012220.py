@@ -94,6 +94,7 @@ class CustomTensorDataset(Dataset):
 
 
 
+
 def train(model, dataloader, device,):
     model.train()
     running_loss = 0.0
@@ -120,13 +121,14 @@ def train(model, dataloader, device,):
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
         correct = (predicted == labels).sum().item()
         
-        loss.backward(retain_graph=True)
+        loss.backward(retain_grad=True)
 
         optimizer.step()
         running_loss += loss.item()
 
     numElems = i + 1
     return running_loss / numElems
+
 
 
 
@@ -198,7 +200,7 @@ if __name__ == "__main__":
 
     # setting the loss function and the training optimizer 
     
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
 
@@ -206,7 +208,7 @@ if __name__ == "__main__":
 
     model.to(device)
     
-    num_epochs = 15
+    num_epochs = 5
     epochsLis = np.arange(num_epochs)
     trainLossLis = np.empty(shape=(num_epochs))
     testLossLis = np.empty(shape=(num_epochs))

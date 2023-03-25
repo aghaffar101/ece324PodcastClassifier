@@ -93,7 +93,6 @@ class CustomTensorDataset(Dataset):
         return x_i, y_i
 
 
-
 def train(model, dataloader, device,):
     model.train()
     running_loss = 0.0

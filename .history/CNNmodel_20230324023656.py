@@ -78,6 +78,23 @@ class CNNClassifier(nn.Module):
         return x
 
 
+x_data, y_data = getImageDataVectors()
+
+
+print(x_data.shape)
+
+print(x_data.shape, y_data.shape)
+
+height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
+model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+
+output = model.forward(x_data)
+print(output)
+
+
+height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
+model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+
 
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
@@ -93,34 +110,55 @@ class CustomTensorDataset(Dataset):
         return x_i, y_i
 
 
+## Test-train split:
+train_ratio = 0.8
+total_length = len(x_data)
+train_length = int(train_ratio * total_length)
+test_length = total_length - train_length
 
-def train(model, dataloader, device,):
+x_train = x_data[:train_length]
+y_train = y_data[:train_length]
+
+x_test = x_data[train_length:]
+y_test = y_data[train_length:]
+
+train_dataset = CustomTensorDataset(x_train, y_train)
+test_dataset = CustomTensorDataset(x_test, y_test)
+
+train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+
+
+# setting the loss function and the training optimizer 
+lossFcn = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+
+def train(model, dataloader, device):
     model.train()
     running_loss = 0.0
 
-    for i, data in enumerate(dataloader):
-        # enumerate is used to get the next batch of data 
-
+    for i, data in enumerate(dataloader, 0):
         inputs, labels = data
-        #print("inputs", inputs.shape)
-        #print("label", labels)
+
+        print("inputs", inputs.shape)
+        print("label", labels)
+
+
         inputs, labels = inputs.to(device), labels.to(device)
 
-        # zero out the gradients that were previously attached to weights 
-        # to prevent accumulated gradients 
-        optimizer.zero_grad() 
-        
-        # forward pass
-        outputs = model(inputs) 
+        optimizer.zero_grad()
+
+        outputs = model(inputs)
                 
         # Calculate loss using raw logits
-        loss = F.cross_entropy(outputs, labels)
+        loss = lossFcn(outputs, labels)
 
         # Calculate accuracy using class probabilities
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
         correct = (predicted == labels).sum().item()
         
-        loss.backward(retain_graph=True)
+        loss.backward()
 
         optimizer.step()
         running_loss += loss.item()
@@ -130,8 +168,9 @@ def train(model, dataloader, device,):
 
 
 
-def test(model, dataloader, device,):
-    model.eval() # test mode 
+
+def test(model, dataloader, device):
+    
     running_loss = 0.0
 
     for i, data in enumerate(dataloader, 0):
@@ -140,7 +179,7 @@ def test(model, dataloader, device,):
         outputs = model.forward(inputs)
                 
         # Calculate loss using raw logits
-        loss = F.cross_entropy(outputs, labels)
+        loss = lossFcn(outputs, labels)
 
         # Calculate accuracy using class probabilities
         _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
@@ -156,71 +195,25 @@ def test(model, dataloader, device,):
 
 if __name__ == "__main__":
 
-
-    x_data, y_data = getImageDataVectors()
-
-
-    print(x_data.shape)
-
-    print(x_data.shape, y_data.shape)
-
-    height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-    model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-    output = model.forward(x_data)
-    print(output)
-
-
-    height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-    model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-
-    #########################
-
-    ## Test-train split:
-    train_ratio = 0.8
-    total_length = len(x_data)
-    train_length = int(train_ratio * total_length)
-    test_length = total_length - train_length
-
-    x_train = x_data[:train_length]
-    y_train = y_data[:train_length]
-
-    x_test = x_data[train_length:]
-    y_test = y_data[train_length:]
-
-    train_dataset = CustomTensorDataset(x_train, y_train)
-    test_dataset = CustomTensorDataset(x_test, y_test)
-
-    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-
-
-    # setting the loss function and the training optimizer 
-    
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9)
-
-
-
     device = torch.device("cpu")
 
     model.to(device)
     
-    num_epochs = 15
+    num_epochs = 5
     epochsLis = np.arange(num_epochs)
     trainLossLis = np.empty(shape=(num_epochs))
     testLossLis = np.empty(shape=(num_epochs))
 
     for epoch in range(num_epochs):
-        train_loss = train(model, train_dataloader, device,)
-        test_loss = test(model, test_dataloader, device,)
+        train_loss = train(model, train_dataloader, device)
+        test_loss = test(model, test_dataloader, device)
         print(f"Epoch: {epoch+1}, Train Loss: {train_loss:.4f}, Test Loss: {test_loss}")
         trainLossLis[epoch] = train_loss
         testLossLis[epoch] = test_loss
 
     import matplotlib.pyplot as plt
 
-    plt.plot(epochsLis, trainLossLis, testLossLis)
+    plt.plot(epochsLis, trainLossLis)
     plt.xlabel("num epochs")
     plt.ylabel("loss")
     plt.show()

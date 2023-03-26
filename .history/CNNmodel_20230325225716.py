@@ -156,20 +156,25 @@ def test(model, dataloader, device,):
 
 
 if __name__ == "__main__":
+
+
     x_data, y_data = getImageDataVectors()
 
-    #print("x_data", x_data)
-    #print(x_data.shape, y_data.shape)
+
+    print("x_data", x_data)
+
+    print(x_data.shape, y_data.shape)
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
     model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
     output = model.forward(x_data)
-    #print(output)
+    print(output)
 
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
     model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+
 
     #########################
 
@@ -198,14 +203,12 @@ if __name__ == "__main__":
     device = torch.device("cpu")
     model.to(device)
     
-    num_epochs = 5
-
-    import gzip 
-    import pickle
     
+    import pickle   
     model_save_path = "model_weights/"
     os.makedirs(model_save_path, exist_ok=True)
 
+    num_epochs = 5
     epochsLis = np.arange(num_epochs)
     trainLossLis = np.empty(shape=(num_epochs))
     testLossLis = np.empty(shape=(num_epochs))
@@ -217,10 +220,9 @@ if __name__ == "__main__":
         trainLossLis[epoch] = train_loss
         testLossLis[epoch] = test_loss
 
-        # Save model weights (for the last epoch only)
-        if epoch == num_epochs-1:
-            with gzip.open(os.path.join(model_save_path, f"model_epoch_{epoch+1}.pkl.gz"), 'wb') as f:
-                pickle.dump(model.state_dict(), f)
+        # Save model weights
+        torch.save(model.state_dict(), os.path.join(model_save_path, f"model_epoch_{epoch+1}.pt"))
+
 
     import matplotlib.pyplot as plt
 
@@ -232,14 +234,10 @@ if __name__ == "__main__":
 
     # CODE TO LOAD THE TRAINED MODEL 
     loaded_model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-    # load the saved weights - from a specific epoch # (in this case it is epoch 5 = num_epochs)
-    with gzip.open(f"model_weights/model_epoch_{num_epochs}.pkl.gz", 'rb') as f:
+    
+    # load the saved weights
+    with open(f"model_weights/model_epoch_{num_epochs}.pkl", 'rb') as f:
         loaded_weights = pickle.load(f)
 
     loaded_model.load_state_dict(loaded_weights)
     loaded_model.to(device)
-
-    # verifying that the model is loaded correctly 
-    test_loss = test(loaded_model, test_dataloader, device,)
-    print(f"Epoch: {num_epochs}, Train Loss: {num_epochs:.4f}, Test Loss: {test_loss}")

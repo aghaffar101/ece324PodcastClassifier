@@ -55,13 +55,10 @@ class CNNClassifier(nn.Module):
 
     def compute_fc1_input_dim(self, height, width, kernelSize):
         dimReduction = kernelSize - 1
-        
         for _ in range(3):
             height = (height - 2 * dimReduction) // 2
             width = (width - 2 * dimReduction) // 2
-        
         return 256 * height * width
-
 
     def forward(self, x):
         x = self.model(x)

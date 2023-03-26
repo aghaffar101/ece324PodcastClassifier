@@ -62,7 +62,6 @@ class CNNClassifier(nn.Module):
         
         return 256 * height * width
 
-
     def forward(self, x):
         x = self.model(x)
         x = x.view(-1, x.shape[1] * x.shape[2] * x.shape[3])

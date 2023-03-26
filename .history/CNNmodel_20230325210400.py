@@ -59,9 +59,7 @@ class CNNClassifier(nn.Module):
         for _ in range(3):
             height = (height - 2 * dimReduction) // 2
             width = (width - 2 * dimReduction) // 2
-        
         return 256 * height * width
-
 
     def forward(self, x):
         x = self.model(x)

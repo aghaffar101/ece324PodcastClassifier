@@ -29,44 +29,56 @@ from torch.utils.data import Dataset, DataLoader
 '''
 
 class CNNClassifier(nn.Module):
+
     def __init__(self, height, width, channels, kernelSize=3, numClasses=10):
         super(CNNClassifier, self).__init__()
         
-        self.model = nn.Sequential(
-            nn.Conv2d(channels, 32, kernelSize), nn.ReLU(),
-            nn.Conv2d(32, 64, kernelSize), nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(64, 128, kernelSize), nn.ReLU(),
-            nn.Conv2d(128, 128, kernelSize), nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(128, 256, kernelSize), nn.ReLU(),
-            nn.Conv2d(256, 256, kernelSize), nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-        )
-        
+        self.conv1 = nn.Conv2d(channels, 6, kernelSize)
+        self.relu1 = nn.ReLU()
+    self.conv2 = nn.Conv2d(6, 16, kernelSize)
+
+        self.pool = nn.MaxPool2d(2, 2)
+
+    
         fc1_input_dim = self.compute_fc1_input_dim(height, width, kernelSize)
-        #print("fc1 input dims, ", fc1_input_dim)
-        
-        self.fc = nn.Sequential(
-            nn.Linear(fc1_input_dim, 1024), nn.ReLU(),
-            nn.Linear(1024, 512), nn.ReLU(),
-            nn.Linear(512, numClasses)
-        )
+
+        self.fc1 = nn.Linear(fc1_input_dim, 120)
+        self.fc2 = nn.Linear(120, 84)
+
+        self.fc3 = nn.Linear(84, numClasses) 
+        # final layer is the number of podcast titles number of nodes 
 
     def compute_fc1_input_dim(self, height, width, kernelSize):
+        # First convolution and pooling
         dimReduction = kernelSize - 1
+        height = (height - dimReduction) // 2
+        width = (width - dimReduction) // 2
         
-        for _ in range(3):
-            height = (height - 2 * dimReduction) // 2
-            width = (width - 2 * dimReduction) // 2
-        
-        return 256 * height * width
+        # Second convolution and pooling
+        height = (height - dimReduction) // 2
+        width = (width - dimReduction) // 2
+
+        return 16 * height * width
 
 
     def forward(self, x):
-        x = self.model(x)
+        # flow of data
+
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.pool(x)
+
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+
         x = x.view(-1, x.shape[1] * x.shape[2] * x.shape[3])
-        x = self.fc(x)
+
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+
+        # No softmax activation
         return x
 
 

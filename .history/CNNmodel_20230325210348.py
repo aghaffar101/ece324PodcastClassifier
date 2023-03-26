@@ -45,8 +45,7 @@ class CNNClassifier(nn.Module):
         )
         
         fc1_input_dim = self.compute_fc1_input_dim(height, width, kernelSize)
-        #print("fc1 input dims, ", fc1_input_dim)
-        
+        print("fc1 input dims, ", fc1_input_dim)
         self.fc = nn.Sequential(
             nn.Linear(fc1_input_dim, 1024), nn.ReLU(),
             nn.Linear(1024, 512), nn.ReLU(),
@@ -55,13 +54,10 @@ class CNNClassifier(nn.Module):
 
     def compute_fc1_input_dim(self, height, width, kernelSize):
         dimReduction = kernelSize - 1
-        
         for _ in range(3):
             height = (height - 2 * dimReduction) // 2
             width = (width - 2 * dimReduction) // 2
-        
         return 256 * height * width
-
 
     def forward(self, x):
         x = self.model(x)

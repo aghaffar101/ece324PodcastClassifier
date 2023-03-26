@@ -159,13 +159,13 @@ if __name__ == "__main__":
     x_data, y_data = getImageDataVectors()
 
     #print("x_data", x_data)
-    #print(x_data.shape, y_data.shape)
+    print(x_data.shape, y_data.shape)
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
     model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
     output = model.forward(x_data)
-    #print(output)
+    print(output)
 
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]

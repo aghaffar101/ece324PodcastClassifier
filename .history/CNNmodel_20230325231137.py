@@ -159,13 +159,13 @@ if __name__ == "__main__":
     x_data, y_data = getImageDataVectors()
 
     #print("x_data", x_data)
-    #print(x_data.shape, y_data.shape)
+    print(x_data.shape, y_data.shape)
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
     model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
     output = model.forward(x_data)
-    #print(output)
+    print(output)
 
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     import gzip 
     import pickle
-    
+    """
     model_save_path = "model_weights/"
     os.makedirs(model_save_path, exist_ok=True)
 
@@ -221,13 +221,14 @@ if __name__ == "__main__":
         if epoch == num_epochs-1:
             with gzip.open(os.path.join(model_save_path, f"model_epoch_{epoch+1}.pkl.gz"), 'wb') as f:
                 pickle.dump(model.state_dict(), f)
-
+        """
+    
     import matplotlib.pyplot as plt
 
-    plt.plot(epochsLis, trainLossLis, testLossLis)
-    plt.xlabel("num epochs")
-    plt.ylabel("loss")
-    plt.show()
+    #plt.plot(epochsLis, trainLossLis, testLossLis)
+    #plt.xlabel("num epochs")
+    #plt.ylabel("loss")
+    #plt.show()
 
 
     # CODE TO LOAD THE TRAINED MODEL 
@@ -240,6 +241,5 @@ if __name__ == "__main__":
     loaded_model.load_state_dict(loaded_weights)
     loaded_model.to(device)
 
-    # verifying that the model is loaded correctly 
     test_loss = test(loaded_model, test_dataloader, device,)
-    print(f"Epoch: {num_epochs}, Train Loss: {num_epochs:.4f}, Test Loss: {test_loss}")
+    print(f"Epoch: {num_epochs}, Train Loss: {train_loss:.4f}, Test Loss: {test_loss}")

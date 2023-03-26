@@ -165,7 +165,7 @@ if __name__ == "__main__":
     model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
     output = model.forward(x_data)
-    #print(output)
+    print(output)
 
 
     height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]

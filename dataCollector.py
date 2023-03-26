@@ -25,10 +25,15 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     try:
         vid_to_download = video.streams.filter(only_video=True, resolution='240p').first()
     except:
-        print("Could not find stream for:", video.title)
+        print("Could not find stream for:", video)
         return num_added
     
-    new_path = os.path.join(path, video.title)
+    try:
+        title = video.title
+    except:
+        title = None
+
+    new_path = os.path.join(path, title)
 
     try:
         if not os.path.exists(new_path):
@@ -53,43 +58,65 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
 
     # we want it to underestimate
 
-    num_frames = (video.length * vid_to_download.fps) -  (vid_to_download.fps * 5)
+    num_frames = cap.get(7)
 
     frame_indices = np.arange(num_frames)
     frames_to_pick = np.random.permutation(frame_indices)[:num_images]
+    frames_to_pick = np.sort(frames_to_pick)
 
-    while True:
+    for frameInd in frames_to_pick:
+        cap.set(1, frameInd)
         notDone, frame = cap.read()
         if not notDone:
             cap.release()
             break
-        if chooseRandomly:
-            if i in frames_to_pick:
-                if os.path.exists(f"{new_path}/{i}.png"):
-                    index_to_change = np.where(frames_to_pick==i)[0][0]
-                    frames_to_pick[index_to_change] += 1
-                    i += 1
-                    continue
-                cv2.imwrite(f"{new_path}/{i}.png", frame)
-                num_added += 1
-        # if we arent choosing randomly, just choose the smallest index
-        else:
-            if num_added < num_images:
-                if os.path.exists(f"{new_path}/{i}.png"):
-                    i += 1
-                    continue
-                cv2.imwrite(f"{new_path}/{i}.png", frame)
-                num_added += 1
-            else:
-                cap.release()
-                break
-        i += 1
+        while os.path.exists(f"{new_path}/{frameInd}.png") and notDone:
+            frameInd += 1
+            cap.set(1, frameInd)
+            notDone, frame = cap.read()
+
+        if not notDone:
+            cap.release()
+            break
+        
+        cv2.imwrite(f"{new_path}/{frameInd}.png", frame)
+        num_added += 1
+
+    cap.release()
+    # while True:
+    #     notDone, frame = cap.read()
+    #     if not notDone:
+    #         cap.release()
+    #         break
+    #     if chooseRandomly:
+    #         if i in frames_to_pick:
+    #             if os.path.exists(f"{new_path}/{i}.png"):
+    #                 index_to_change = np.where(frames_to_pick==i)[0][0]
+    #                 frames_to_pick[index_to_change] += 1
+    #                 i += 1
+    #                 continue
+    #             cv2.imwrite(f"{new_path}/{i}.png", frame)
+    #             num_added += 1
+    #     # if we arent choosing randomly, just choose the smallest index
+    #     else:
+    #         if i > 3000:
+    #             if num_added < num_images:
+    #                 if os.path.exists(f"{new_path}/{i}.png"):
+    #                     i += 1
+    #                     continue
+    #                 cv2.imwrite(f"{new_path}/{i}.png", frame)
+    #                 num_added += 1
+    #             else:
+    #                 cap.release()
+    #                 break
+    #     i += 1
     
     os.remove(vid_path)
     return num_added
 
 def downloadFramesOnePlaylist(playlist_link,podcast, num_images, path, chooseRandomly):
     global path_fail_ind, path_weird_characters
+    
     try:
         pl = Playlist(playlist_link)
     except:
@@ -111,7 +138,9 @@ def downloadFramesOnePlaylist(playlist_link,podcast, num_images, path, chooseRan
 
     stop_early = False
 
-    one_video_num_images = num_images / len(pl.videos)
+    length = min(len(pl.videos), 10)
+
+    one_video_num_images = num_images // length
 
     if one_video_num_images < 1:
         stop_early = True
@@ -120,13 +149,19 @@ def downloadFramesOnePlaylist(playlist_link,podcast, num_images, path, chooseRan
 
     for video in pl.videos:
         if stop_early:
-            if count == num_images:
+            if count >= num_images:
                 break
             images_added = downloadFramesOneVideo(video, 1, new_path, False)
         else:
+            if count >= num_images:
+                break
             images_added = downloadFramesOneVideo(video, one_video_num_images, new_path, chooseRandomly)
         count += images_added
-        print(images_added, "images added from video:", video.title)
+        try:
+            title = video.title
+        except:
+            title = None
+        print(images_added, "images added from video:", title)
     
     return count
 
@@ -155,6 +190,6 @@ def downloadFramesToPath(links_dict, num_images, path="", chooseRandomly=True):
     return
 
 if __name__ == "__main__":
-    links_dict = getLinkDictFromCSV(csv_filename='playlistLinks.csv')
-    downloadFramesToPath(links_dict=links_dict, num_images=200)
+    links_dict = getLinkDictFromCSV(csv_filename='pl.csv')
+    downloadFramesToPath(links_dict=links_dict, num_images=34000, path="D:", chooseRandomly=False)
     print(path_weird_characters)

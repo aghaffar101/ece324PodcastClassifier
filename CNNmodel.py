@@ -88,12 +88,9 @@ height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
 model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
 
 output = model.forward(x_data)
-print(output)
-
-
-height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
+np_output = output.detach().numpy()
+print(np_output.shape)
+print(np.sum(np_output))
 
 class CustomTensorDataset(Dataset):
     def __init__(self, x, y):
@@ -159,9 +156,6 @@ def train(model, dataloader, device):
 
     numElems = i + 1
     return running_loss / numElems
-
-
-
 
 def test(model, dataloader, device):
     

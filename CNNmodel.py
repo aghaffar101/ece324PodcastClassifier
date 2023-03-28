@@ -4,13 +4,16 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn.functional as F
+import random
+from sklearn.model_selection import train_test_split
 
 import numpy as np
 import os
 from PIL import Image
 
 from torch.utils.data import random_split
-from dataLoader import getImageDataVectors
+from dataLoader import loadDataFiles, getImageDataVectors
+from dataCollector import getLinkDictFromCSV
 
 from torch.utils.data import Dataset, DataLoader
 
@@ -67,6 +70,7 @@ class CNNClassifier(nn.Module):
         x = self.model(x)
         x = x.view(-1, x.shape[1] * x.shape[2] * x.shape[3])
         x = self.fc(x)
+        x = torch.softmax(x, dim=1)
         return x
 
 
@@ -86,49 +90,34 @@ class CustomTensorDataset(Dataset):
 
 
 
-def train(model, dataloader, device,):
+def train_op(model,x_data,y_data,device):
     model.train()
     running_loss = 0.0
     
     model_save_path = "model_weights/"
     os.makedirs(model_save_path, exist_ok=True)
 
-    num_epochs = 5
-    epochsLis = np.arange(num_epochs)
-    trainLossLis = np.empty(shape=(num_epochs))
-    testLossLis = np.empty(shape=(num_epochs))
+    inputs, labels = x_data.to(device), y_data.to(device)
 
-
-    for i, data in enumerate(dataloader):
-        # enumerate is used to get the next batch of data 
-
-        inputs, labels = data
-        #print("inputs", inputs.shape)
-        #print("label", labels)
-        inputs, labels = inputs.to(device), labels.to(device)
-
-        # zero out the gradients that were previously attached to weights 
-        # to prevent accumulated gradients 
-        optimizer.zero_grad() 
+    # zero out the gradients that were previously attached to weights 
+    # to prevent accumulated gradients 
+    optimizer.zero_grad() 
         
-        # forward pass
-        outputs = model(inputs) 
+    # forward pass
+    outputs = model(inputs) 
                 
-        # Calculate loss using raw logits
-        loss = F.cross_entropy(outputs, labels)
-
-        # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
-        correct = (predicted == labels).sum().item()
+    # Calculate loss using raw logits
+    loss = F.cross_entropy(outputs, labels)
         
-        loss.backward(retain_graph=True)
+    loss.backward(retain_graph=True)
 
-        optimizer.step()
-        running_loss += loss.item()
+    optimizer.step()
+    running_loss += loss.item()
+    _, predicted = torch.max(outputs, 1)
+    _, targets = torch.max(labels, 1)
+    correct = (predicted == targets).sum().item()
 
-    numElems = i + 1
-    return running_loss / numElems
-
+    return running_loss, correct
 
 
 def test(model, dataloader, device,):
@@ -144,7 +133,7 @@ def test(model, dataloader, device,):
         loss = F.cross_entropy(outputs, labels)
 
         # Calculate accuracy using class probabilities
-        _, predicted = torch.max(F.softmax(outputs, dim=1), 1)
+        _, predicted = torch.max(outputs, 1)
         correct = (predicted == labels).sum().item()
 
         running_loss += loss.item()
@@ -156,46 +145,47 @@ def test(model, dataloader, device,):
 
 
 if __name__ == "__main__":
-    x_data, y_data = getImageDataVectors()
-
-    #print("x_data", x_data)
-    #print(x_data.shape, y_data.shape)
-
-    height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-    model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
-
-    output = model.forward(x_data)
-    #print(output)
-
-
-    height, width, channels = x_data.shape[2], x_data.shape[3], x_data.shape[1]
-    model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+    num_classes = 2
+    podcastDict = getLinkDictFromCSV('playlistLinks.csv')
+    image_files, labels = loadDataFiles(num_classes = 2)
+    height = 240
+    width = 426
+    channels = 3
+    model = CNNClassifier(height, width, channels, numClasses=num_classes)
 
     #########################
 
-    ## Test-train split:
-    train_ratio = 0.8
-    total_length = len(x_data)
-    train_length = int(train_ratio * total_length)
-    test_length = total_length - train_length
 
-    x_train = x_data[:train_length]
-    y_train = y_data[:train_length]
+    ## train-valid-test split: 0.7-0.15-0.15
 
-    x_test = x_data[train_length:]
-    y_test = y_data[train_length:]
+    x_train_files, x_testvalid_files, y_train_labels, y_testvalid_labels = train_test_split(image_files, labels, test_size=0.3, random_state=69)
+    x_valid_files, x_test_files, y_valid_labels, y_test_labels = train_test_split(x_testvalid_files, y_testvalid_labels, test_size=0.5, random_state=69)
+    
+    # train_ratio = 0.7
+    # total_length = len(image_files)
+    # train_length = int(train_ratio * total_length)
+    # test_length = (total_length - train_length) // 2
 
-    train_dataset = CustomTensorDataset(x_train, y_train)
-    test_dataset = CustomTensorDataset(x_test, y_test)
+    # x_train_files = image_files[:train_length]
+    # y_train_labels = labels[:train_length]
 
-    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+    # x_test_files = image_files[train_length:train_length + test_length]
+    # y_test_labels = labels[train_length: train_length + test_length]
+
+    # x_valid_files = image_files[train_length+test_length:]
+    # y_valid_labels = labels[train_length+test_length:]
+
+    # train_dataset = CustomTensorDataset(x_train, y_train)
+    # test_dataset = CustomTensorDataset(x_test, y_test)
+
+    # train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+    # test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 
     # setting the loss function and the training optimizer 
-    optimizer = optim.SGD(model.parameters(), lr=0.0005, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
-    device = torch.device("cpu")
+    device = torch.device('cpu')
     model.to(device)
     
     num_epochs = 5
@@ -208,38 +198,119 @@ if __name__ == "__main__":
 
     epochsLis = np.arange(num_epochs)
     trainLossLis = np.empty(shape=(num_epochs))
-    testLossLis = np.empty(shape=(num_epochs))
+    validLossLis = np.empty(shape=(num_epochs))
+
+    train_accs = np.empty(shape=(num_epochs))
+    valid_accs = np.empty(shape=(num_epochs))
+
+    batch_size = 32
+    num_iters = len(x_train_files) // batch_size
 
     for epoch in range(num_epochs):
-        train_loss = train(model, train_dataloader, device,)
-        test_loss = test(model, test_dataloader, device,)
-        print(f"Epoch: {epoch+1}, Train Loss: {train_loss:.4f}, Test Loss: {test_loss}")
-        trainLossLis[epoch] = train_loss
-        testLossLis[epoch] = test_loss
+        avg_train_loss = 0
+        avg_valid_loss = 0
+        train_acc = 0
+        valid_acc = 0
 
+        # run training
+
+        train_indices = np.arange(len(x_train_files))
+        np.random.shuffle(train_indices)
+
+        for it in range(0, len(x_train_files), batch_size):
+            print(it)
+            batch_indices = train_indices[it:it+batch_size]
+            x_batch, y_batch = getImageDataVectors(x_train_files, y_train_labels, batch_indices, num_classes)
+            train_loss, acc = train_op(model, x_batch, y_batch, device)
+            avg_train_loss += train_loss
+            train_acc += acc
+        
+        avg_train_loss = avg_train_loss / num_iters
+        train_acc = train_acc / len(x_train_files)
+
+        trainLossLis[epoch] = avg_train_loss
+        train_accs[epoch] = train_acc
+
+        # run validation
+
+        valid_indices = np.arange(len(x_valid_files))
+        np.random.shuffle(valid_indices)
+
+        for it in range(0, len(x_valid_files), batch_size):
+            print(it)
+            batch_indices = valid_indices[it:it+batch_size]
+            x_batch, y_batch = getImageDataVectors(x_valid_files, y_valid_labels, batch_indices, num_classes)
+            x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+            outputs = model(x_batch)
+                
+            # Calculate loss using raw logits
+            running_loss = F.cross_entropy(outputs, y_batch).item()
+            avg_valid_loss += running_loss
+            _, predicted = torch.max(outputs, 1)
+            _, targets = torch.max(y_batch, 1)
+            correct = (predicted == targets).sum().item()
+            valid_acc += correct
+
+        avg_valid_loss = avg_valid_loss / len(x_valid_files)
+        valid_acc = valid_acc / len(x_valid_files)
+
+        validLossLis[epoch] = avg_valid_loss
+        valid_accs[epoch] = valid_acc
+
+        print(f"Epoch: {epoch} Training Loss: {avg_train_loss} Validation Loss: {avg_valid_loss}.Training Accuracy: {train_acc} Validation Accuracy: {valid_acc}")
         # Save model weights (for the last epoch only)
-        if epoch == num_epochs-1:
-            with gzip.open(os.path.join(model_save_path, f"model_epoch_{epoch+1}.pkl.gz"), 'wb') as f:
-                pickle.dump(model.state_dict(), f)
+        with gzip.open(os.path.join(model_save_path, f"model_epoch_{epoch+1}_classes{num_classes}.pkl.gz"), 'wb') as f:
+            pickle.dump(model.state_dict(), f)
 
     import matplotlib.pyplot as plt
 
-    plt.plot(epochsLis, trainLossLis, testLossLis)
+    plt.title("Training vs Validation Loss")
+    plt.plot(epochsLis, trainLossLis, label="Training")
+    plt.plot(epochsLis, validLossLis, label="Validation")
     plt.xlabel("num epochs")
     plt.ylabel("loss")
+    plt.legend(loc='best')
     plt.show()
 
+    plt.title("Training vs Validation Accuracy")
+    plt.plot(epochsLis, train_accs, label="Training")
+    plt.plot(epochsLis, valid_accs, label="Validation")
+    plt.xlabel("num epochs")
+    plt.ylabel("accuracy")
+    plt.legend(loc='best')
+    plt.show()
 
-    # CODE TO LOAD THE TRAINED MODEL 
-    loaded_model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+    # Now test the model 
+    
+    test_acc = 0
+    test_indices = np.arange(len(x_test_files))
+    np.random.shuffle(test_indices)
 
-    # load the saved weights - from a specific epoch # (in this case it is epoch 5 = num_epochs)
-    with gzip.open(f"model_weights/model_epoch_{num_epochs}.pkl.gz", 'rb') as f:
-        loaded_weights = pickle.load(f)
+    for it in range(0, len(x_test_files), batch_size):
+        batch_indices = test_indices[it:it+batch_size]
+        x_batch, y_batch = getImageDataVectors(x_test_files, y_test_labels, batch_indices, num_classes)
+        x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+        outputs = model(x_batch) 
+                
+        _, predicted = torch.max(outputs, 1)
+        _, targets = torch.max(y_batch, 1)
+        correct = (predicted == targets).sum().item()
+        test_acc += correct
 
-    loaded_model.load_state_dict(loaded_weights)
-    loaded_model.to(device)
+    test_acc = test_acc / len(x_test_files)
+    print(f"Test Accuracy: {test_acc}")
 
-    # verifying that the model is loaded correctly 
-    test_loss = test(loaded_model, test_dataloader, device,)
-    print(f"Epoch: {num_epochs}, Train Loss: {num_epochs:.4f}, Test Loss: {test_loss}")
+
+    # # CODE TO LOAD THE TRAINED MODEL 
+    # loaded_model = CNNClassifier(height, width, channels, numClasses=len(y_data[0]))
+
+    # # load the saved weights - from a specific epoch # (in this case it is epoch 5 = num_epochs)
+    # with gzip.open(f"model_weights/model_epoch_{num_epochs}.pkl.gz", 'rb') as f:
+    #     loaded_weights = pickle.load(f)
+
+    # loaded_model.load_state_dict(loaded_weights)
+    # loaded_model.to(device)
+
+    # # verifying that the model is loaded correctly 
+    # test_loss = test(loaded_model, test_dataloader, device,)
+    # print(f"Epoch: {num_epochs}, Train Loss: {num_epochs:.4f}, Test Loss: {test_loss}")

@@ -54,11 +54,8 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
     
     cap = cv2.VideoCapture(vid_path)
     i = 0
-    # get a random sample
 
-    # we want it to underestimate
-
-    num_frames = cap.get(7)
+    num_frames = cap.get(7) # gets number of frames in capture
 
     frame_indices = np.arange(num_frames)
     frames_to_pick = np.random.permutation(frame_indices)[:num_images]
@@ -83,33 +80,6 @@ def downloadFramesOneVideo(video, num_images, path, chooseRandomly):
         num_added += 1
 
     cap.release()
-    # while True:
-    #     notDone, frame = cap.read()
-    #     if not notDone:
-    #         cap.release()
-    #         break
-    #     if chooseRandomly:
-    #         if i in frames_to_pick:
-    #             if os.path.exists(f"{new_path}/{i}.png"):
-    #                 index_to_change = np.where(frames_to_pick==i)[0][0]
-    #                 frames_to_pick[index_to_change] += 1
-    #                 i += 1
-    #                 continue
-    #             cv2.imwrite(f"{new_path}/{i}.png", frame)
-    #             num_added += 1
-    #     # if we arent choosing randomly, just choose the smallest index
-    #     else:
-    #         if i > 3000:
-    #             if num_added < num_images:
-    #                 if os.path.exists(f"{new_path}/{i}.png"):
-    #                     i += 1
-    #                     continue
-    #                 cv2.imwrite(f"{new_path}/{i}.png", frame)
-    #                 num_added += 1
-    #             else:
-    #                 cap.release()
-    #                 break
-    #     i += 1
     
     os.remove(vid_path)
     return num_added

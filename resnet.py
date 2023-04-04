@@ -16,13 +16,13 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Top level data directory. Here we assume the format of the directory conforms
 #   to the ImageFolder structure
-data_dir = "./tenclassdata"
+data_dir = "./twentyclassdata"
 
 # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
 model_name = "resnet"
 
 # Number of classes in the dataset
-num_classes = 10
+num_classes = 20
 
 # Batch size for training (change depending on how much memory you have)
 batch_size = 32
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     plt.ylabel("Loss")
     plt.legend(loc='best')
     plt.show()
-    plt.savefig("Train_Valid_Losses_10class.pdf")
+    plt.savefig("Train_Valid_Losses_20class.pdf")
 
     plt.title("Training vs Validation Acc for Image Classifier")
     plt.plot(epochs_for_plot, train_accs, label="Train")
@@ -271,5 +271,5 @@ if __name__ == "__main__":
     plt.ylabel("Accuracy")
     plt.legend(loc='best')
     plt.show()
-    plt.savefig("Train_Valid_Accuracies_10class.pdf")
+    plt.savefig("Train_Valid_Accuracies_20class.pdf")
 

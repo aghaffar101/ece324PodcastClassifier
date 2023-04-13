@@ -1,5 +1,4 @@
 from utils import *
-assert torch.cuda.is_available()
 
 run_config = dict(
     # spectrum

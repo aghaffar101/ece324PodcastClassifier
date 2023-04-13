@@ -3,6 +3,7 @@ import os
 import numpy as np
 import csv
 import cv2
+from pydub import AudioSegment
 
 path_fail_ind = 0
 path_weird_characters = []
@@ -153,6 +154,45 @@ def downloadFramesToPath(links_dict, num_images, path="", chooseRandomly=True):
         num_images_added = downloadFramesOnePlaylist(playlist_link, podcast, one_playlist_num_images, path, chooseRandomly)
         print(num_images_added, "imaged added from playlist:",podcast)
     return
+
+def get_audio_snippet(mp3_file, time_start):
+
+    # Open an mp3 file
+    audio = AudioSegment.from_file("testing.mp3",
+                                format="mp3")
+
+    # pydub does things in milliseconds
+    twenty_seconds = 20 * 1000
+
+    # song clip of 10 seconds from starting
+    _20_second_snippet = audio[:twenty_seconds]
+
+    # save file
+    _20_second_snippet.export("_20_seconds.mp3", format="mp3")
+
+def download_audio(links_dict, num_clips, path="", chooseRandomly=True):
+    for link in links_dict.keys():
+        # link of the video to be downloaded
+        # url input from user
+        yt = YouTube(str(link))
+
+         # extract only audio
+        video = yt.streams.filter(only_audio=True).first()
+
+        # check for destination to save file
+
+        destination = path
+
+        # download the file
+        out_file = video.download(output_path=destination)
+
+        # save the file
+        base, ext = os.path.splitext(out_file)
+        new_file = base + '.mp3'
+        os.rename(out_file, new_file)
+
+
+
 
 if __name__ == "__main__":
     links_dict = getLinkDictFromCSV(csv_filename='playlistLinks.csv')

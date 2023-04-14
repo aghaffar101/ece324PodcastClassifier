@@ -5,6 +5,7 @@ model_weights/
 __pycache__/
 *.py[cod]
 *$py.class
+alldata/
 
 # C extensions
 *.so

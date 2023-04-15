@@ -16,19 +16,19 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Top level data directory. Here we assume the format of the directory conforms
 #   to the ImageFolder structure
-data_dir = "./alldata"
+data_dir = "./twentyclassdata"
 
 # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
 model_name = "resnet"
 
 # Number of classes in the dataset
-num_classes = 44
+num_classes = 20
 
 # Batch size for training (change depending on how much memory you have)
 batch_size = 32
 
 # Number of epochs to train for
-num_epochs = 10
+num_epochs = 5
 
 # Flag for feature extracting. When False, we finetune the whole model,
 #   when True we only update the reshaped layer params
@@ -253,7 +253,7 @@ criterion = nn.CrossEntropyLoss()
 if __name__ == "__main__":
 # Train and evaluate
     model_ft, train_accs, valid_accs, train_losses, valid_losses = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"))
-    torch.save(model_ft.state_dict(), "allclassmodel.pt")
+    torch.save(model_ft.state_dict(), "20classmodel.pt")
     epochs_for_plot = np.arange(num_epochs)
     plt.title("Training vs Validation Loss for Image Classifier")
     plt.plot(epochs_for_plot, train_losses, label="Train")
@@ -261,8 +261,8 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend(loc='best')
+    plt.savefig("Train_Valid_Losses_20classes.pdf")
     plt.show()
-    plt.savefig("Train_Valid_Losses_allclasses.pdf")
 
     plt.title("Training vs Validation Acc for Image Classifier")
     plt.plot(epochs_for_plot, train_accs, label="Train")
@@ -270,6 +270,6 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend(loc='best')
+    plt.savefig("Train_Valid_Accuracies_20classes.pdf")
     plt.show()
-    plt.savefig("Train_Valid_Accuracies_allclasses.pdf")
 

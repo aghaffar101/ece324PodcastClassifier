@@ -6,6 +6,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 alldata/
+twoclassdata/
+fiveclassdata/
+tenclassdata/
+allclassdata/
 
 # C extensions
 *.so

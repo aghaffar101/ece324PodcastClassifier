@@ -87,4 +87,4 @@ def splitToTrainValid(train_ratio=0.8, path=""):
     return
 
 if __name__ == "__main__":
-    splitToTrainValid(path="twentyclassdata")
+    splitToTrainValid(path="audio_data")

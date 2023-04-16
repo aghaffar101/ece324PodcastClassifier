@@ -1,6 +1,8 @@
 data/
 twentyclassdata/
 model_weights/
+audio_data/
+two_class_data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

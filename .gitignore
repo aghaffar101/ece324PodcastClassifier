@@ -10,7 +10,7 @@ twoclassdata/
 fiveclassdata/
 tenclassdata/
 allclassdata/
-
+clipData/
 # C extensions
 *.so
 

@@ -28,7 +28,7 @@ num_classes = 45
 batch_size = 32
 
 # Number of epochs to train for
-num_epochs = 10
+num_epochs = 5
 
 # Flag for feature extracting. When False, we finetune the whole model,
 #   when True we only update the reshaped layer params
@@ -261,6 +261,7 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend(loc='best')
+    plt.savefig("Train_Valid_Losses_20classes.pdf")
     plt.show()
     plt.savefig("Train_Valid_Losses_2_class_audio.pdf")
     plt.show()
@@ -271,6 +272,7 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend(loc='best')
+    plt.savefig("Train_Valid_Accuracies_20classes.pdf")
     plt.show()
     plt.savefig("Train_Valid_Accuracies_2_class_audio.pdf")
     plt.show()

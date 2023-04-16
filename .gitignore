@@ -7,7 +7,12 @@ two_class_data/
 __pycache__/
 *.py[cod]
 *$py.class
-
+alldata/
+twoclassdata/
+fiveclassdata/
+tenclassdata/
+allclassdata/
+clipData/
 # C extensions
 *.so
 

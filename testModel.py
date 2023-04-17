@@ -13,7 +13,7 @@ import copy
 from resnet import initialize_model
 from PIL import Image
 
-if __name__ == "__main__":
+def test_model(datapath):
     device = torch.device('cpu')
     data_transforms = {
     'train': transforms.Compose([
@@ -36,7 +36,6 @@ if __name__ == "__main__":
     num_clips = 0
     num_pics = 0
     # now i need to load the data
-    datapath = "clipData"
     for podcast in os.listdir(datapath):
         running_ind_acc = 0
         running_avg_acc = 0
@@ -75,6 +74,13 @@ if __name__ == "__main__":
 
     averaged_acc = (averaged_acc / num_clips)*100
     individual_acc = (individual_acc / num_pics)*100
+
+    print("Total Individual Accuracy:", individual_acc)
+    print("Total Averaged Accuracy:", averaged_acc)
+
+if __name__ == "__main__":
+    test_model(datapath="clipData")
+    
 
     
 

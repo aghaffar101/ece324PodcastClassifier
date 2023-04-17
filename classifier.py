@@ -5,14 +5,14 @@ from torchvision import transforms
 import os
 from resnet import initialize_model
 from dataCollector import getLinkDictFromCSV
-from dataCollector import downloadVideo
+from dataCollector import downloadVideo, download_audio
 from PIL import Image
 import cv2
 from speechToText.mp4_to_mp3 import mp4_to_mp3
 from spectogram import get_spectogram
 
 DEFAULT_DEVICE = torch.device('cpu')
-NUM_CLASSES = 44
+NUM_CLASSES = 45
 DATA_TRANSFORM = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -84,7 +84,10 @@ def convert_to_frames(videopath, gap_per_frame, output_path):
         cv2.imwrite(f"{output_path}/{frameInd}.png", frame)
         frameInd += (gap_per_frame*30)
 
-def classify_video(videopath, device=DEFAULT_DEVICE, use_audio=True, timegap_per_frame=5):
+def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, timegap_per_frame=5):
+    # get dict describing labels
+    labelDict = getLinkDictFromCSV("labels.csv")
+    labels = list(labelDict.values())
     # make the image into frames and audio
     convert_to_frames(videopath, gap_per_frame=timegap_per_frame, output_path="test_frames")
     if use_audio:
@@ -108,11 +111,14 @@ def classify_video(videopath, device=DEFAULT_DEVICE, use_audio=True, timegap_per
         audio_probs = prob_from_audio(model=audio_model, spectogramPath="spectogram.png")
     else:
         _, pred = torch.max(frame_probs, 0)
-        return pred
+        return labels[pred.item()]
 
 if __name__ == "__main__":
-    vid_path = downloadVideo(video_link="https://www.youtube.com/watch?v=OYhGxfP37us&ab_channel=JREClips", output_path="testvideo")
-    classify_video(videopath=vid_path, use_audio=False, timegap_per_frame = 30)
+    vid_link = "https://www.youtube.com/watch?v=OYhGxfP37us&ab_channel=JREClips"
+    vid_path = downloadVideo(video_link=vid_link, output_path="testvideo")
+    audio_path = download_audio(vid_link=vid_link, num_clips=1, path="testvideo", vid_num=1)
+    podcast = classify_video(videopath=vid_path, audiopath=audio_path, use_audio=True, timegap_per_frame = 30)
+    print("Video classified as:", podcast)
 
 
 

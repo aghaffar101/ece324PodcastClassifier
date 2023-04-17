@@ -308,7 +308,7 @@ def download_audio(vid_link, num_clips, path, vid_num):
             pass
 
         # download the file
-        out_file = video.download(filename="temp.mp4")
+        out_file = video.download(filename="temp.mp4", output_path=path)
 
         # video_info = yt_dlp.YoutubeDL().extract_info(
         #     url = vid_link,download=False
@@ -327,12 +327,14 @@ def download_audio(vid_link, num_clips, path, vid_num):
         # save the file
         length = yt.length
         sample_rate = length // num_clips
-        audio = AudioSegment.from_file(r"C:\Users\james\Documents\U of T\UofTy3s2\ece324\ece324PodcastClassifier\temp.mp4", format="mp4")
+        audio = AudioSegment.from_file(file=out_file, format="mp4")
 
         for i in range(num_clips):
             get_audio_snippet(i*sample_rate, audio)
             spectogram.get_spectogram("convert.wav", os.path.join(path, str(vid_num)+"_"+str(i)+".png"))
             gc.collect()
+        
+        return out_file
 
 
 if __name__ == "__main__":

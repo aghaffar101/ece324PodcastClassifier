@@ -25,7 +25,7 @@ def downloadClips(linksDict, clipsPerPodcast, clipSize, imagesPerClip):
         if not os.path.exists(new_path):
             os.mkdir(new_path)
         
-        first_video = pl.videos[0]
+        first_video = pl.videos[1]
 
         try:
             title = first_video.title
@@ -78,5 +78,5 @@ def downloadClips(linksDict, clipsPerPodcast, clipSize, imagesPerClip):
 
 
 if __name__ == "__main__":
-    linksDict = getLinkDictFromCSV("playlistLinks.csv")
+    linksDict = getLinkDictFromCSV("pl.csv")
     downloadClips(linksDict, 50, 20, 10)

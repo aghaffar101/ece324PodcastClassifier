@@ -1,5 +1,10 @@
 # ece324PodcastClassifier
-classify podcasts described in playlistLinks.csv using image classification, audio classification, facial and voice recognition.
+
+classify podcasts described in playlistLinks.csv using image classification, audio classification, facial and voice recognition as well as NLP for keyword extraction.
+
+Try our model: the file classifier.py contains a function 'classify_video' which takes in a video path and returns the most likely podcast it is! We also supply code to download a youtube video given its link, just follow the current code in main to see. Note: video will need to be in the 45 predefined classes (more on that below) for it to work.
+
+# Navigating the Repository
 
 Files:
 

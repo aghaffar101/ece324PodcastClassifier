@@ -4,6 +4,9 @@ import numpy as np
 import csv
 import cv2
 from pydub import AudioSegment
+import spectogram
+from moviepy.editor import *
+import gc
 
 path_fail_ind = 0
 path_weird_characters = []
@@ -160,46 +163,105 @@ def downloadFramesToPath(links_dict, num_images, path="", chooseRandomly=True):
         print(num_images_added, "imaged added from playlist:",podcast)
     return
 
-def get_audio_snippet(mp3_file, time_start):
+
+def get_audio_snippet(time_start, audio):
+
+    time_start = time_start * 1000
 
     # Open an mp3 file
-    audio = AudioSegment.from_file("testing.mp3",
-                                format="mp3")
 
     # pydub does things in milliseconds
     twenty_seconds = 20 * 1000
 
-    # song clip of 10 seconds from starting
-    _20_second_snippet = audio[:twenty_seconds]
+    # song clip of 20 seconds
+    _20_second_snippet = audio[time_start:time_start+twenty_seconds]
+
+    try :
+        os.remove("convert.wav")
+    except:
+        pass
 
     # save file
-    _20_second_snippet.export("_20_seconds.mp3", format="mp3")
+    _20_second_snippet.export("convert.wav", format="wav")
 
-def download_audio(links_dict, num_clips, path="", chooseRandomly=True):
-    for link in links_dict.keys():
-        # link of the video to be downloaded
-        # url input from user
-        yt = YouTube(str(link))
+def get_audio_data(csv_filename, clips_per_class, path=""):
+    links_dict = getLinkDictFromCSV(csv_filename)
+    for podcast in links_dict.keys():
+        playlist_link = links_dict[podcast]
+        playlist = Playlist(playlist_link)
+        vid_links = playlist.video_urls
+        playlist_length = min(len(vid_links), 20)
+        clips_per_vid = clips_per_class // playlist_length
+        if not os.path.exists(os.path.join(path, podcast)):
+            os.mkdir(os.path.join(path, podcast))
+        class_path = os.path.join(path, podcast)
+        for i in range(playlist_length):
+            link = vid_links[i*(len(vid_links)//playlist_length)]
+            j = i*(len(vid_links)//playlist_length)
+            while True:
+                try:
+                    download_audio(link, clips_per_vid, class_path, j)
+                    break
+                except:
+                    j+=1
+                    print("Error downloading audio, trying again")
+                    link = vid_links[j]
+            gc.collect()
 
-         # extract only audio
+
+
+            
+
+def download_audio(vid_link, num_clips, path, vid_num):
+
+        yt = YouTube(str(vid_link))
+
+        # # extract only audio
         video = yt.streams.filter(only_audio=True).first()
 
-        # check for destination to save file
-
-        destination = path
+        try:
+            os.remove("temp.mp3")
+        except:
+            pass
+        try:
+            os.remove("temp.mp4")
+        except:
+            pass
 
         # download the file
-        out_file = video.download(output_path=destination)
+        out_file = video.download(filename="temp.mp4")
+
+        # video_info = yt_dlp.YoutubeDL().extract_info(
+        #     url = vid_link,download=False
+        # )
+        # filename = f"temp.mp3"
+        # options={
+        #     'format':'bestaudio/best',
+        #     'keepvideo':False,
+        #     'outtmpl':filename,
+        # }
+
+        # with yt_dlp.YoutubeDL(options) as ydl:
+        #     ydl.download([video_info['webpage_url']])
+
 
         # save the file
-        base, ext = os.path.splitext(out_file)
-        new_file = base + '.mp3'
-        os.rename(out_file, new_file)
+        length = yt.length
+        sample_rate = length // num_clips
+        audio = AudioSegment.from_file(r"C:\Users\james\Documents\U of T\UofTy3s2\ece324\ece324PodcastClassifier\temp.mp4", format="mp4")
+
+        for i in range(num_clips):
+            get_audio_snippet(i*sample_rate, audio)
+            spectogram.get_spectogram("convert.wav", os.path.join(path, str(vid_num)+"_"+str(i)+".png"))
+            gc.collect()
+
 
 
 
 
 if __name__ == "__main__":
-    links_dict = getLinkDictFromCSV(csv_filename='pl.csv')
-    downloadFramesToPath(links_dict=links_dict, num_images=34000, path="D:", chooseRandomly=False)
-    print(path_weird_characters)
+    # links_dict = getLinkDictFromCSV(csv_filename='pl.csv')
+    # downloadFramesToPath(links_dict=links_dict, num_images=34000, path="D:", chooseRandomly=False)
+    # print(path_weird_characters)
+    get_audio_data("playlists_finish.csv", 1000, "./audio_data")
+    #audio = AudioSegment.from_file(r"C:\Users\james\Documents\U of T\UofTy3s2\ece324\ece324PodcastClassifier\temp", format="mp3")

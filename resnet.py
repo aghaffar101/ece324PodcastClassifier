@@ -16,13 +16,13 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Top level data directory. Here we assume the format of the directory conforms
 #   to the ImageFolder structure
-data_dir = "./twentyclassdata"
+data_dir = "./audio_data"
 
 # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
 model_name = "resnet"
 
 # Number of classes in the dataset
-num_classes = 20
+num_classes = 45
 
 # Batch size for training (change depending on how much memory you have)
 batch_size = 32
@@ -253,7 +253,7 @@ criterion = nn.CrossEntropyLoss()
 if __name__ == "__main__":
 # Train and evaluate
     model_ft, train_accs, valid_accs, train_losses, valid_losses = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"))
-    torch.save(model_ft.state_dict(), "20classmodel.pt")
+    torch.save(model_ft.state_dict(), "audioclassmodel.pt")
     epochs_for_plot = np.arange(num_epochs)
     plt.title("Training vs Validation Loss for Image Classifier")
     plt.plot(epochs_for_plot, train_losses, label="Train")
@@ -262,6 +262,8 @@ if __name__ == "__main__":
     plt.ylabel("Loss")
     plt.legend(loc='best')
     plt.savefig("Train_Valid_Losses_20classes.pdf")
+    plt.show()
+    plt.savefig("Train_Valid_Losses_2_class_audio.pdf")
     plt.show()
 
     plt.title("Training vs Validation Acc for Image Classifier")
@@ -272,4 +274,8 @@ if __name__ == "__main__":
     plt.legend(loc='best')
     plt.savefig("Train_Valid_Accuracies_20classes.pdf")
     plt.show()
+    plt.savefig("Train_Valid_Accuracies_2_class_audio.pdf")
+    plt.show()
+    plt.close()
+    plt.clf()
 

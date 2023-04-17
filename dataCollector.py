@@ -334,7 +334,7 @@ def download_audio(vid_link, num_clips, path, vid_num):
             spectogram.get_spectogram("convert.wav", os.path.join(path, str(vid_num)+"_"+str(i)+".png"))
             gc.collect()
         
-        return out_file
+        return path+"/"+str(vid_num)+"_"+str(i)+".png"
 
 
 if __name__ == "__main__":

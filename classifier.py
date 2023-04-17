@@ -57,6 +57,7 @@ def prob_from_frames(model, framesPath, device=DEFAULT_DEVICE, batch_size=32):
 def prob_from_audio(model, spectogramPath, device=DEFAULT_DEVICE):
     img = Image.open(spectogramPath).convert('RGB')
     img_tensor = DATA_TRANSFORM(img).to(torch.float32)
+    img_tensor = torch.unsqueeze(img_tensor, 0)
     model_output = model(img_tensor)
     return model_output
 
@@ -91,15 +92,11 @@ def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, 
     labels = list(labelDict.values())
     # make the image into frames and audio
     convert_to_frames(videopath, gap_per_frame=timegap_per_frame, output_path="test_frames")
-    if use_audio:
-        audio_converter = mp4_to_mp3(audiopath, "new_audio.mp3")
-        audio_converter.convert()
-        get_spectogram(audio_path="new_audio.mp3", name="spectogram.png")
     
     # get the probability outputs for the image classifier
     image_model, input_size = initialize_model(model_name="resnet", num_classes=NUM_CLASSES, feature_extract=True, use_pretrained=True)
     image_model = image_model.to(device)
-    image_model.load_state_dict(torch.load("model_state_dicts/allclassmodel.pt"))
+    image_model.load_state_dict(torch.load("model_state_dicts/allclassmodel.pt", map_location=torch.device('cpu')))
     image_model.eval() # switch to testing mode
     frame_probs = prob_from_frames(model=image_model, framesPath="test_frames")
 
@@ -109,7 +106,7 @@ def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, 
         audio_model = audio_model.to(device)
         audio_model.load_state_dict(torch.load("model_state_dicts/audioclassmodel.pt"))
         audio_model.eval()
-        audio_probs = prob_from_audio(model=audio_model, spectogramPath="spectogram.png")
+        audio_probs = prob_from_audio(model=audio_model, spectogramPath= audiopath)
         # now grab the logistic regression model
         logRegModel = LogisticRegressionModel(in_dim=90, out_dim=45)
         logRegModel.load_state_dict(torch.load("model_state_dicts/logregmodel.pt"))

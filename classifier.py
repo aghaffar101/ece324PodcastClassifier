@@ -10,6 +10,7 @@ from PIL import Image
 import cv2
 from speechToText.mp4_to_mp3 import mp4_to_mp3
 from spectogram import get_spectogram
+from logReg import LogisticRegressionModel
 
 DEFAULT_DEVICE = torch.device('cpu')
 NUM_CLASSES = 45
@@ -91,7 +92,7 @@ def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, 
     # make the image into frames and audio
     convert_to_frames(videopath, gap_per_frame=timegap_per_frame, output_path="test_frames")
     if use_audio:
-        audio_converter = mp4_to_mp3(videopath, "new_audio.mp3")
+        audio_converter = mp4_to_mp3(audiopath, "new_audio.mp3")
         audio_converter.convert()
         get_spectogram(audio_path="new_audio.mp3", name="spectogram.png")
     
@@ -109,6 +110,13 @@ def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, 
         audio_model.load_state_dict(torch.load("model_state_dicts/audioclassmodel.pt"))
         audio_model.eval()
         audio_probs = prob_from_audio(model=audio_model, spectogramPath="spectogram.png")
+        # now grab the logistic regression model
+        logRegModel = LogisticRegressionModel(in_dim=90, out_dim=45)
+        logRegModel.load_state_dict(torch.load("model_state_dicts/logregmodel.pt"))
+        both_probs = torch.cat((frame_probs, audio_probs), dim=0)
+        output_probs = logRegModel(both_probs)
+        _, pred = torch.max(output_probs, 0)
+        return labels[pred.item()]
     else:
         _, pred = torch.max(frame_probs, 0)
         return labels[pred.item()]

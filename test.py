@@ -8,5 +8,5 @@ if __name__ == "__main__":
     A = torch.cat((W, Z), dim=1)
     print(A.shape)
     model.linear.weight = torch.nn.Parameter(A)
-    model.linear.bias = torch.nn.Parameter(torch.zeros(1))
+    model.linear.bias = torch.nn.Parameter(torch.zeros(45))
     torch.save(model.state_dict(), "logregmodel.pt")

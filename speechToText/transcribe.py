@@ -68,7 +68,7 @@ def speechToText(apiKey, mp4File):
     # Save and print transcript
     with open('transcript.txt', 'w') as f:
         for para in paragraphs:
-            print(para['text'] + '\n')
+            #print(para['text'] + '\n')
             f.write(para['text'] + '\n')
     
 if __name__ == '__main__':

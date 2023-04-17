@@ -87,7 +87,7 @@ def convert_to_frames(videopath, gap_per_frame, output_path):
         cv2.imwrite(f"{output_path}/{frameInd}.png", frame)
         frameInd += (gap_per_frame*30)
 
-def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, timegap_per_frame=5):
+def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, timegap_per_frame=30):
     # get dict describing labels
     labelDict = getLinkDictFromCSV("labels.csv")
     labels = list(labelDict.values())

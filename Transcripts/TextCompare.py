@@ -39,23 +39,26 @@ class textCompare:
                     similar = 0
                     offset = 0
                     for j in range (len(list1)-1):
-                        if (list1[j] == list2[i-1+j+offset]):
-                            similar += 1
-                        elif (list1[j] == list2[i+j+offset]):
-                            similar += 1
-                            offset += 1
-                        elif (list1[j] == list2[i+j+1+offset]):
-                            similar += 1
-                            offset += 2
-                        elif (list1[j] == list2[i+j+2+offset]):
-                            similar += 1
-                            offset += 3
-                        elif (list1[j] == list2[i+j+3+offset]):
-                            similar += 1
-                            offset += 4
-                        elif (list1[j] == list2[i+j+4+offset]):
-                            similar += 1
-                            offset += 5
+                        try:
+                            if (list1[j] == list2[i-1+j+offset]):
+                                similar += 1
+                            elif (list1[j] == list2[i+j+offset]):
+                                similar += 1
+                                offset += 1
+                            elif (list1[j] == list2[i+j+1+offset]):
+                                similar += 1
+                                offset += 2
+                            elif (list1[j] == list2[i+j+2+offset]):
+                                similar += 1
+                                offset += 3
+                            elif (list1[j] == list2[i+j+3+offset]):
+                                similar += 1
+                                offset += 4
+                            elif (list1[j] == list2[i+j+4+offset]):
+                                similar += 1
+                                offset += 5
+                        except:
+                            pass
                         # elif (list1[j] == list2[i+j+5+offset]):
                         #     similar += 1
                         #     offset += 6

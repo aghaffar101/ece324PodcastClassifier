@@ -13,6 +13,7 @@ from scraping import scrape
 from speechToText import transcribe
 from face_rec import main_video, simple_facerec
 from yake_keywords import yake_keywords
+import classifier
 
 
 import os
@@ -65,10 +66,12 @@ def instaGram_search(text):
     # Get the transcipt from instagram video
     transcribe.speechToText("5086f7f974ef468cb4c631b7b188f8ac", f"instagram_videos/{short_link}/{filename}")
 
+    podcast = classifier.classify_video(f"instagram_videos/{short_link}/{image_filename}", audiopath = "./new_audio.mp3", use_audio = False)
+    print(podcast)
 
     #keyWordQuerySearch
 
-    mainSearchQuery = ""
+    mainSearchQuery = podcast
 
     # Get transcript and instagram description from textfile to a string variable
     with open(f'transcript.txt', 'r', encoding="utf") as file:
@@ -78,39 +81,21 @@ def instaGram_search(text):
         des_str = file.read().replace('\n', '')
 
     
-    
+    #podcast = 
 
     #Facial Recognition of thumbnail initially
     names = main_video.findVideo(f"instagram_videos/{short_link}/{filename}")
     yakeKeywordsQuery = yake_keywords.yakeKeywords(f'transcript.txt')
 
 
+    for name in names:
+        mainSearchQuery += name + " "
+    mainSearchQuery += (yakeKeywordsQuery + " full interview podcast")
+    result = youtubeSearch.youtubeSearch(mainSearchQuery)
+    match = verificationTranscript.verifyYoutube(result)
 
-
-    if (names):
-        print("Person Found")
-
-        for name in names:
-            mainSearchQuery += name + " "
-        mainSearchQuery += (yakeKeywordsQuery + " full interview podcast")
-        result = youtubeSearch.youtubeSearch(mainSearchQuery)
-        match = verificationTranscript.verifyYoutube(result)
-
-        print("Second")
-        webbrowser.open(f"https://www.youtube.com/results?search_query={mainSearchQuery}")
-        
-        
-    else:
-
-        #Description
-        des_str = des_str.replace("#", " ")
-        print("The description: ", des_str)
-        mainSearchQuery += des_str + yakeKeywordsQuery
-        print(mainSearchQuery)
-        result = youtubeSearch.youtubeSearch(mainSearchQuery)
-        match = verificationTranscript.verifyYoutube(result)
-        webbrowser.open(f"https://www.youtube.com/results?search_query={mainSearchQuery}")
-        names = "No one was found"
+    print("Second")
+    webbrowser.open(f"https://www.youtube.com/results?search_query={mainSearchQuery}")
         
 
     # Delete the folder after every iteration

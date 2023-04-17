@@ -11,6 +11,22 @@ import gc
 path_fail_ind = 0
 path_weird_characters = []
 
+def downloadVideo(video_link, output_path=""):
+    yt = YouTube(video_link)
+    try:
+        vid_to_download = yt.streams.filter(resolution='240p').first()
+    except:
+        print("Could not find video stream")
+        return
+    try:
+        vid_path = vid_to_download.download(output_path=output_path)
+    except:
+        print("Cannot download video:", yt.title)
+        return
+    return vid_path
+    
+    
+
 def getLinkDictFromCSV(csv_filename):
     links_dict = {}
     with open(csv_filename) as csv_file:

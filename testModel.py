@@ -25,9 +25,9 @@ if __name__ == "__main__":
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
 }
-    model, input_size = initialize_model(model_name="resnet", num_classes=44, feature_extract=True, use_pretrained=True)
-    model = model.to(device)
+    model, input_size = initialize_model(model_name="resnet", num_classes=45, feature_extract=True, use_pretrained=True)
     model.load_state_dict(torch.load("allclassmodel.pt"))
+    model = model.to(device)
     model.eval() # switch to testing mode
     imageTensors = []
     individual_acc = 0

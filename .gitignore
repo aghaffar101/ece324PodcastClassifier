@@ -13,6 +13,7 @@ fiveclassdata/
 tenclassdata/
 allclassdata/
 clipData/
+test_frames/
 # C extensions
 *.so
 

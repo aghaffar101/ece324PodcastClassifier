@@ -13,6 +13,8 @@ def adjustDirectory(path=""):
     else:
         datapath = path
     for podcast in os.listdir(datapath):
+        if (podcast == 'train') or (podcast == 'val'):
+            continue
         print(podcast)
         podcastPath = os.path.join(datapath, podcast)
         count = 0
@@ -87,4 +89,5 @@ def splitToTrainValid(train_ratio=0.8, path=""):
     return
 
 if __name__ == "__main__":
-    splitToTrainValid(path="audio_data")
+    #adjustDirectory("alldata")
+    splitToTrainValid(path="alldata")

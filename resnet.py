@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Top level data directory. Here we assume the format of the directory conforms
 #   to the ImageFolder structure
-data_dir = "./audio_data"
+data_dir = "./alldata"
 
 # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
 model_name = "resnet"
@@ -34,7 +34,7 @@ num_epochs = 5
 #   when True we only update the reshaped layer params
 feature_extract = True
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 
 def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_inception=False):
     since = time.time()
@@ -253,7 +253,7 @@ criterion = nn.CrossEntropyLoss()
 if __name__ == "__main__":
 # Train and evaluate
     model_ft, train_accs, valid_accs, train_losses, valid_losses = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"))
-    torch.save(model_ft.state_dict(), "audioclassmodel.pt")
+    torch.save(model_ft.state_dict(), "allclassmodel.pt")
     epochs_for_plot = np.arange(num_epochs)
     plt.title("Training vs Validation Loss for Image Classifier")
     plt.plot(epochs_for_plot, train_losses, label="Train")
@@ -261,9 +261,7 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend(loc='best')
-    plt.savefig("Train_Valid_Losses_20classes.pdf")
-    plt.show()
-    plt.savefig("Train_Valid_Losses_2_class_audio.pdf")
+    plt.savefig("Train_Valid_Losses_allclasses.pdf")
     plt.show()
 
     plt.title("Training vs Validation Acc for Image Classifier")
@@ -272,10 +270,7 @@ if __name__ == "__main__":
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend(loc='best')
-    plt.savefig("Train_Valid_Accuracies_20classes.pdf")
+    plt.savefig("Train_Valid_Accuracies_allclasses.pdf")
     plt.show()
-    plt.savefig("Train_Valid_Accuracies_2_class_audio.pdf")
-    plt.show()
-    plt.close()
-    plt.clf()
+
 

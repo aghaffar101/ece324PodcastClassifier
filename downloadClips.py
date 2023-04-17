@@ -79,4 +79,4 @@ def downloadClips(linksDict, clipsPerPodcast, clipSize, imagesPerClip):
 
 if __name__ == "__main__":
     linksDict = getLinkDictFromCSV("pl.csv")
-    downloadClips(linksDict, 50, 20, 10)
+    downloadClips(linksDict, 100, 20, 10)

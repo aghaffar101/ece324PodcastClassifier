@@ -13,7 +13,7 @@ class LogisticRegressionModel(torch.nn.Module):
         self.linear = torch.nn.Linear(in_dim, out_dim)
     def forward(self, inp_feats):
         output = self.linear(inp_feats)
-        output = torch.softmax(output, dim=1)
+        output = torch.softmax(output, dim=0)
         return output
 
 def train_model(datapath):

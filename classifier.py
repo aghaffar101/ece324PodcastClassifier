@@ -59,6 +59,7 @@ def prob_from_audio(model, spectogramPath, device=DEFAULT_DEVICE):
     img_tensor = DATA_TRANSFORM(img).to(torch.float32)
     img_tensor = torch.unsqueeze(img_tensor, 0)
     model_output = model(img_tensor)
+    model_output = torch.squeeze(model_output, 0)
     return model_output
 
 

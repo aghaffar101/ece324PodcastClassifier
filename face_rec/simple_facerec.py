@@ -1,6 +1,6 @@
-import os
 import face_recognition
 import cv2
+import os
 import glob
 import numpy as np
 import json
@@ -28,7 +28,7 @@ class SimpleFacerec:
 
         print("{} encoding images found.".format(len(images_path)))
 
-        f = open(r'face_rec\temp_encoding.json')
+        f = open(r'C:\Users\james\Documents\U of T\UofTy3s2\ece324\ece324PodcastClassifier\face_rec\temp_encoding.json')
         data = json.load(f)
 
 
@@ -60,14 +60,17 @@ class SimpleFacerec:
             # Store file name and file encoding
             self.known_face_encodings.append(img_encoding)
             self.known_face_names.append(filename)
-        with open(r'face_rec\temp_encoding.json', 'w') as f:
+        with open(r'C:\Users\james\OneDrive\Documents\GitHub\odin-flask-app\face_rec\temp_encoding.json', 'w') as f:
             json.dump(data, f, indent=4, cls=NumpyArrayEncoder)
         print("Encoding images loaded")
 
     def detect_known_faces(self, frame):
-        face_image = face_recognition.load_image_file(frame)
-        face_locations = face_recognition.face_locations(face_image)
-        face_encodings = face_recognition.face_encodings(face_image, face_locations)
+        small_frame = cv2.resize(frame, (0, 0), fx=self.frame_resizing, fy=self.frame_resizing)
+        # Find all the faces and face encodings in the current frame of video
+        # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
+        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        face_locations = face_recognition.face_locations(rgb_small_frame)
+        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
         face_names = []
         for face_encoding in face_encodings:

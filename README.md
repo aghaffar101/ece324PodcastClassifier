@@ -2,7 +2,11 @@
 
 classify podcasts on YouTube described in playlistLinks.csv using image classification, audio classification, facial and voice recognition as well as NLP for keyword extraction.
 
-Try our model: the file classifier.py contains a function 'classify_video' which takes in a video path and returns the most likely podcast! We also supply code to download a youtube video given its link in that file, just follow the current code in main to see. Note: video will need to be in the 45 predefined classes in playlistLinks.csv for it to work.
+# Try our model: 
+
+The file classifier.py contains a function 'classify_video' which takes in a video path and returns the most likely podcast! We also supply code to download a youtube video given its link in that file, just follow the current code in main to see. Note: video will need to be in the 45 predefined classes in playlistLinks.csv for it to work.
+
+app.py contains the code for running a search algorithm to attempt to find source videos close to (or exactly equal to!) the video you input.
 
 # Navigating the Repository
 
@@ -35,16 +39,17 @@ Testing and Output:
 
 classifier.py: has code for running our final product, equipped with a function for downloading a youtube video given its link. Can classify with and without audio, we recommend without audio if video is longer than a few minutes.
 
+app.py: Code for running search algorithm to determine source videos close to (or equal to) the video inputted.
+
 modelTest.py: Runs a comparitive study on the performance of image classification with and without averaging on any new arbitrary dataset.
 
 # Folders:
 
-Folders contains code that are unfinished/not used in final product, or saved data/figures.
+Folders contains code that are supplementary, not used in the final product, or saved data/figures.
 
-Transcripts: Contains code for downloading and interpreting transcripts from YouTube videos. Unused in final product since we ran out of time.
+Transcripts: Contains code for downloading and interpreting transcripts from YouTube videos. 
 
-face_rec : Contains work we implemented on facial recognition. Works fairly well but is not very useful in the case of 240p images. 
-More useful if we planned to branch to higher resolutions.
+face_rec : Contains work we implemented on facial recognition. Works fairly well but is not very useful in the case of 240p images. Used more in app.py algorithm.
 
 model_state_dicts: Contains state_dicts for pytorch models we trained. Names are explanatory of the model.
 
@@ -54,6 +59,6 @@ Scraping: Contains code for scraping mediums other than YouTube (inc. Instagram 
 
 search: Contains code for reverse video search, an algorithm used to attempt to find a YouTube video from keywords (which we generate)
 
-speechToText: Contains code for converting audio files into text manuscripts. Used as an alternative when YouTube videos do not have good manuscripts.
+speechToText: Contains code for converting audio files into text manuscripts.
 
 yakeKeywords: Contains code for keyword extraction using NLP method YAKE

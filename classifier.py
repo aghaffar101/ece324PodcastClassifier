@@ -120,10 +120,15 @@ def classify_video(videopath, audiopath, device=DEFAULT_DEVICE, use_audio=True, 
         return labels[pred.item()]
 
 if __name__ == "__main__":
+    use_audio = False # only set to true if you have ffmpeg!
+    timegap_per_frame = 5 # amount of time between frames sampled. Lower = more frames = better accuracy, but also longer compute time
     vid_link = "https://www.youtube.com/watch?v=OYhGxfP37us&ab_channel=JREClips"
     vid_path = downloadVideo(video_link=vid_link, output_path="testvideo")
-    audio_path = download_audio(vid_link=vid_link, num_clips=1, path="testvideo", vid_num=1)
-    podcast = classify_video(videopath=vid_path, audiopath=audio_path, use_audio=True, timegap_per_frame = 30)
+    if use_audio:
+        audio_path = download_audio(vid_link=vid_link, num_clips=1, path="testvideo", vid_num=1)
+    else:
+        audio_path = ""
+    podcast = classify_video(videopath=vid_path, audiopath=audio_path, use_audio=use_audio, timegap_per_frame = timegap_per_frame)
     print("Video classified as:", podcast)
 
 

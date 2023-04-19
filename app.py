@@ -21,15 +21,6 @@ import shutil, sys
 
 
 
-# Initial route for flask app
-# app = Flask(__name__)
-# @app.route('/')
-# def main():
-
-#     return render_template('index.html')
-
-
-
 # Search instagram clips
 def instaGram_search(text):
     path = "instagram_videos"
@@ -104,62 +95,6 @@ def instaGram_search(text):
 
 
     return match, names
-
-
-# Short video
-def shortsSearch(text):
-    yt = YouTube(text)
-   
-    #Download Scraped Video
-    video = yt.streams.get_highest_resolution()
-    video.download()
-    print("Yayyy!! Download Completed!!!")
-
-    #To Download Audio File
-    audio = yt.streams.filter(only_audio=True).first()
-    audio.download()
-
-    out_file = video.download(output_path=".")
-  
-    # save the file
-    base, ext = os.path.splitext(out_file)
-    new_file = base + '.mp3'
-    os.rename(out_file, new_file)
-    
-    
-    
-    transcribe.speechToText("5086f7f974ef468cb4c631b7b188f8ac", new_file)
-
-
-    result = youtubeSearch.youtubeSearch(yt.title)
-    match = verificationTranscript.verifyYoutube(result)
-
-    
-    webbrowser.open(f"https://www.youtube.com/results?search_query={yt.title}")
-
-    os.remove(new_file)
-
-    return jsonify(match)
-
-
-
-
-# @app.route('/', methods=['POST'])
-# def my_form_post():
-
-#     #Get Raw data from request
-#     text = request.form['text']
-
-#     if ("instagram" in text):
-#         result = instaGram_search(text)
-#         with open('test23.json', 'w') as fp:
-#             json.dump(result, fp, indent=4)
-#         return result
-    
-#     elif ("youtube" in text):
-#         return shortsSearch(text)
-#     else:
-#         pass
     
 
 if __name__ == '__main__':
